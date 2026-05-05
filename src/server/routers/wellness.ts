@@ -1,11 +1,18 @@
 import { router, protectedProcedure } from "../trpc";
-import { wellnessResources, resourceLikes } from "../db/schema";
+import { wellnessResources, resourceLikes, users } from "../db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 
 export const wellnessRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(wellnessResources).orderBy(desc(wellnessResources.createdAt));
+    return ctx.db.select({
+      id: wellnessResources.id, title: wellnessResources.title, url: wellnessResources.url,
+      description: wellnessResources.description, type: wellnessResources.type,
+      createdAt: wellnessResources.createdAt, userId: wellnessResources.userId,
+      userName: users.name,
+    }).from(wellnessResources)
+      .leftJoin(users, eq(wellnessResources.userId, users.id))
+      .orderBy(desc(wellnessResources.createdAt));
   }),
 
   create: protectedProcedure
@@ -14,17 +21,17 @@ export const wellnessRouter = router({
       url: z.string().url(),
       description: z.string().optional(),
       type: z.enum(["article","video","link","podcast"]),
-      isAnonymous: z.boolean().default(false),
     }))
     .mutation(async ({ ctx, input }) => {
       const [created] = await ctx.db.insert(wellnessResources).values({
-        userId: input.isAnonymous ? null : ctx.user.id,
+        userId: ctx.user.id,
         ...input,
       }).returning();
       return created;
     }),
 
   delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(resourceLikes).where(eq(resourceLikes.resourceId, input.id));
     await ctx.db.delete(wellnessResources).where(and(eq(wellnessResources.id, input.id), eq(wellnessResources.userId, ctx.user.id)));
     return { success: true };
   }),

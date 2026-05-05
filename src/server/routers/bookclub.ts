@@ -1,6 +1,6 @@
 import { router, protectedProcedure, adminProcedure } from "../trpc";
 import { books, bookLoans, bookClubReadings, bookClubVotes, bookClubVoteChoices, readingProgress, bookReviews, users } from "../db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, or } from "drizzle-orm";
 import { z } from "zod";
 
 export const bookclubRouter = router({
@@ -20,19 +20,35 @@ export const bookclubRouter = router({
       return b;
     }),
 
+  deleteMyBook: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(bookLoans).where(eq(bookLoans.bookId, input.id));
+    await ctx.db.delete(books).where(and(eq(books.id, input.id), eq(books.ownerId, ctx.user.id)));
+    return { success: true };
+  }),
+
   requestLoan: protectedProcedure.input(z.object({ bookId: z.number() })).mutation(async ({ ctx, input }) => {
     const [b] = await ctx.db.select().from(books).where(eq(books.id, input.bookId));
     if (!b || b.status !== "available") throw new Error("Livro não disponível");
+    if (b.ownerId === ctx.user.id) throw new Error("Você não pode solicitar seu próprio livro");
     const [loan] = await ctx.db.insert(bookLoans).values({ bookId: input.bookId, requesterId: ctx.user.id }).returning();
     await ctx.db.update(books).set({ status: "reserved" }).where(eq(books.id, input.bookId));
     return loan;
   }),
 
+  cancelRequest: protectedProcedure.input(z.object({ loanId: z.number() })).mutation(async ({ ctx, input }) => {
+    const [loan] = await ctx.db.select().from(bookLoans).where(and(eq(bookLoans.id, input.loanId), eq(bookLoans.requesterId, ctx.user.id)));
+    if (!loan || loan.status !== "requested") throw new Error("Solicitação não encontrada");
+    await ctx.db.update(bookLoans).set({ status: "cancelled" }).where(eq(bookLoans.id, input.loanId));
+    await ctx.db.update(books).set({ status: "available" }).where(eq(books.id, loan.bookId));
+    return { success: true };
+  }),
+
   getMyLoans: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.select({
       id: bookLoans.id, status: bookLoans.status, requestedAt: bookLoans.requestedAt,
-      startDate: bookLoans.startDate, dueDate: bookLoans.dueDate,
-      bookId: bookLoans.bookId, bookTitle: books.title, bookAuthor: books.author,
+      startDate: bookLoans.startDate, dueDate: bookLoans.dueDate, returnedAt: bookLoans.returnedAt,
+      notes: bookLoans.notes, bookId: bookLoans.bookId,
+      bookTitle: books.title, bookAuthor: books.author,
       requesterId: bookLoans.requesterId,
     }).from(bookLoans).leftJoin(books, eq(bookLoans.bookId, books.id))
       .where(eq(bookLoans.requesterId, ctx.user.id)).orderBy(desc(bookLoans.requestedAt));
@@ -40,28 +56,41 @@ export const bookclubRouter = router({
 
   getLoanRequests: protectedProcedure.query(async ({ ctx }) => {
     const myBooks = await ctx.db.select({ id: books.id }).from(books).where(eq(books.ownerId, ctx.user.id));
+    if (myBooks.length === 0) return [];
     const myBookIds = myBooks.map(b => b.id);
-    if (myBookIds.length === 0) return [];
-    return ctx.db.select({
+    const loans = await ctx.db.select({
       id: bookLoans.id, status: bookLoans.status, requestedAt: bookLoans.requestedAt,
+      startDate: bookLoans.startDate, dueDate: bookLoans.dueDate, returnedAt: bookLoans.returnedAt,
       bookId: bookLoans.bookId, bookTitle: books.title,
       requesterId: bookLoans.requesterId, requesterName: users.name,
     }).from(bookLoans).leftJoin(books, eq(bookLoans.bookId, books.id))
       .leftJoin(users, eq(bookLoans.requesterId, users.id))
-      .where(eq(bookLoans.status, "requested")).orderBy(desc(bookLoans.requestedAt));
+      .orderBy(desc(bookLoans.requestedAt));
+    return loans.filter(l => myBookIds.includes(l.bookId!));
   }),
 
-  approveLoan: protectedProcedure.input(z.object({ loanId: z.number() })).mutation(async ({ ctx, input }) => {
-    const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-    await ctx.db.update(bookLoans).set({ status: "active", startDate: new Date(), dueDate }).where(eq(bookLoans.id, input.loanId));
+  approveLoan: protectedProcedure
+    .input(z.object({ loanId: z.number(), daysToReturn: z.number().default(14) }))
+    .mutation(async ({ ctx, input }) => {
+      const dueDate = new Date(Date.now() + input.daysToReturn * 24 * 60 * 60 * 1000);
+      await ctx.db.update(bookLoans).set({ status: "active", startDate: new Date(), dueDate }).where(eq(bookLoans.id, input.loanId));
+      const [loan] = await ctx.db.select().from(bookLoans).where(eq(bookLoans.id, input.loanId));
+      await ctx.db.update(books).set({ status: "borrowed" }).where(eq(books.id, loan.bookId));
+      return { success: true };
+    }),
+
+  rejectLoan: protectedProcedure.input(z.object({ loanId: z.number() })).mutation(async ({ ctx, input }) => {
     const [loan] = await ctx.db.select().from(bookLoans).where(eq(bookLoans.id, input.loanId));
-    await ctx.db.update(books).set({ status: "borrowed" }).where(eq(books.id, loan.bookId));
+    if (!loan) throw new Error("Empréstimo não encontrado");
+    await ctx.db.update(bookLoans).set({ status: "cancelled" }).where(eq(bookLoans.id, input.loanId));
+    await ctx.db.update(books).set({ status: "available" }).where(eq(books.id, loan.bookId));
     return { success: true };
   }),
 
-  returnBook: protectedProcedure.input(z.object({ loanId: z.number() })).mutation(async ({ ctx, input }) => {
-    await ctx.db.update(bookLoans).set({ status: "returned", returnedAt: new Date() }).where(eq(bookLoans.id, input.loanId));
+  confirmReturn: protectedProcedure.input(z.object({ loanId: z.number() })).mutation(async ({ ctx, input }) => {
     const [loan] = await ctx.db.select().from(bookLoans).where(eq(bookLoans.id, input.loanId));
+    if (!loan) throw new Error("Empréstimo não encontrado");
+    await ctx.db.update(bookLoans).set({ status: "returned", returnedAt: new Date() }).where(eq(bookLoans.id, input.loanId));
     await ctx.db.update(books).set({ status: "available" }).where(eq(books.id, loan.bookId));
     return { success: true };
   }),
@@ -139,4 +168,9 @@ export const bookclubRouter = router({
       const [r] = await ctx.db.insert(bookReviews).values({ userId: ctx.user.id, ...input }).returning();
       return r;
     }),
+
+  deleteReview: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(bookReviews).where(and(eq(bookReviews.id, input.id), eq(bookReviews.userId, ctx.user.id)));
+    return { success: true };
+  }),
 });
