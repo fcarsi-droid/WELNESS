@@ -1,4 +1,4 @@
-import { handleGoogleCallback } from "../../src/server/routers/auth.js";
+import { handleGoogleCallback } from "../../src/server/routers/auth";
 
 export const config = { runtime: "edge" };
 
