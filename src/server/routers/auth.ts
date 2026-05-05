@@ -1,8 +1,8 @@
-import { router, publicProcedure, protectedProcedure } from "../trpc.js";
-import { users, accounts, sessions } from "../db/schema.js";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { users, accounts, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "../db/index.js";
+import { db } from "../db/index";
 import { randomUUID } from "crypto";
 
 const APP_URL = process.env.APP_URL || "http://localhost:5173";

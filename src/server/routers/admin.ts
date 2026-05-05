@@ -1,5 +1,5 @@
-import { router, adminProcedure } from "../trpc.js";
-import { users, notifications } from "../db/schema.js";
+import { router, adminProcedure } from "../trpc";
+import { users, notifications } from "../db/schema";
 import { eq, ne } from "drizzle-orm";
 import { z } from "zod";
 
