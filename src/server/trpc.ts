@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import { db } from "./db";
+import { db } from "./db/index";
 import { sessions, users } from "./db/schema";
 import { eq } from "drizzle-orm";
 
@@ -13,7 +13,6 @@ export async function createContext({ req }: FetchCreateContextFnOptions) {
     })
   );
   const sessionId = cookies["session_id"];
-
   let user = null;
   let session = null;
 
