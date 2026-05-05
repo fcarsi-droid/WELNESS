@@ -3,7 +3,6 @@ import { users, accounts, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db/index";
-import { randomUUID } from "crypto";
 
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
@@ -79,7 +78,8 @@ export async function handleGoogleCallback(code: string): Promise<{ sessionId: s
     await db.update(users).set({ name: googleUser.name, image: googleUser.picture })
       .where(eq(users.id, userId));
   } else {
-    userId = randomUUID();
+    // Use Web Crypto API (available in Edge runtime)
+    userId = globalThis.crypto.randomUUID();
     const allUsers = await db.select().from(users);
     const isFirst = allUsers.length === 0;
 
@@ -93,7 +93,7 @@ export async function handleGoogleCallback(code: string): Promise<{ sessionId: s
     });
 
     await db.insert(accounts).values({
-      id: randomUUID(),
+      id: globalThis.crypto.randomUUID(),
       userId,
       provider: "google",
       providerAccountId: googleUser.id,
@@ -103,7 +103,7 @@ export async function handleGoogleCallback(code: string): Promise<{ sessionId: s
     });
   }
 
-  const sessionId = randomUUID();
+  const sessionId = globalThis.crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   await db.insert(sessions).values({ id: sessionId, userId, expiresAt });
 
