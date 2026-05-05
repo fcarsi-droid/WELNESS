@@ -1,16 +1,30 @@
 import { useState } from "react";
-import { Route, Switch, useLocation } from "wouter";
+import { Route, Switch } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "./lib/trpc";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { Layout } from "./components/layout/Layout";
 import LoginPage from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import MoodPage from "./pages/Mood";
+import SleepPage from "./pages/Sleep";
+import HydrationPage from "./pages/Hydration";
+import CaloriesPage from "./pages/Calories";
+import { Toaster } from "react-hot-toast";
 import "./index.css";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
 });
+
+const ComingSoon = ({ title }: { title: string }) => (
+  <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
+    <p style={{ fontSize: "3rem", margin: "0 0 1rem" }}>🚧</p>
+    <h2 style={{ margin: "0 0 0.5rem" }}>{title}</h2>
+    <p style={{ color: "var(--text-muted)" }}>Este módulo está sendo desenvolvido.</p>
+    <a href="/" className="btn-primary" style={{ textDecoration: "none", marginTop: "1rem", display: "inline-flex" }}>← Voltar ao início</a>
+  </div>
+);
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
@@ -27,21 +41,24 @@ function AppRoutes() {
     );
   }
 
-  if (!user || user.status !== "active") {
-    return <LoginPage />;
-  }
+  if (!user || user.status !== "active") return <LoginPage />;
 
   return (
     <Layout>
       <Switch>
         <Route path="/" component={Dashboard} />
-        <Route>
-          <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
-            <h2>Página em construção 🚧</h2>
-            <p style={{ color: "var(--text-muted)" }}>Este módulo está sendo desenvolvido.</p>
-            <a href="/" className="btn-primary" style={{ textDecoration: "none", marginTop: "1rem", display: "inline-flex" }}>← Voltar ao início</a>
-          </div>
-        </Route>
+        <Route path="/mood" component={MoodPage} />
+        <Route path="/sleep" component={SleepPage} />
+        <Route path="/hydration" component={HydrationPage} />
+        <Route path="/calories" component={CaloriesPage} />
+        <Route path="/recipes"><ComingSoon title="Receitas" /></Route>
+        <Route path="/wellness"><ComingSoon title="Bem-Estar" /></Route>
+        <Route path="/community"><ComingSoon title="Comunidade" /></Route>
+        <Route path="/cultural"><ComingSoon title="Grupos Culturais" /></Route>
+        <Route path="/book-club"><ComingSoon title="Clube da Leitura" /></Route>
+        <Route path="/reports"><ComingSoon title="Relatórios" /></Route>
+        <Route path="/admin"><ComingSoon title="Administração" /></Route>
+        <Route><ComingSoon title="Página não encontrada" /></Route>
       </Switch>
     </Layout>
   );
@@ -54,6 +71,7 @@ export default function App() {
       <QueryClientProvider client={qc}>
         <AuthProvider>
           <AppRoutes />
+          <Toaster position="bottom-right" toastOptions={{ style: { fontFamily: "'DM Sans', sans-serif", fontSize: "0.875rem" } }} />
         </AuthProvider>
       </QueryClientProvider>
     </trpc.Provider>
