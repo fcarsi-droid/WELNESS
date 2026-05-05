@@ -4,9 +4,11 @@ import { useAuth } from "../../hooks/useAuth";
 import { trpc } from "../../lib/trpc";
 import {
   LayoutDashboard, Smile, Moon, Droplets, Utensils,
-  Users, Newspaper, Heart, Bell, BarChart2, Settings,
+  Newspaper, Heart, BarChart2, Settings,
   ChefHat, Menu, X, LogOut, Film, Library
 } from "lucide-react";
+
+const SIDEBAR_W = 252;
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/", color: "#4CAF82" },
@@ -29,7 +31,6 @@ const adminItems = [
 function NavItem({ item, currentPath }: { item: typeof navItems[0]; currentPath: string }) {
   const [, navigate] = useLocation();
   const isActive = currentPath === item.href || (item.href !== "/" && currentPath.startsWith(item.href));
-
   return (
     <div
       className={`nav-item ${isActive ? "active" : ""}`}
@@ -42,28 +43,28 @@ function NavItem({ item, currentPath }: { item: typeof navItems[0]; currentPath:
   );
 }
 
-export function Layout({ children }: { children: ReactNode }) {
+function SidebarInner({ user, isAdmin, onLogout }: { user: any; isAdmin: boolean; onLogout: () => void }) {
   const [location] = useLocation();
-  const { user, isAdmin } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const logout = trpc.auth.logout.useMutation({
-    onSuccess: () => window.location.href = "/",
-  });
-
-  const SidebarContent = () => (
+  return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "1.25rem 0.875rem" }}>
       {/* Brand */}
-      <div style={{ marginBottom: "1.75rem", padding: "0.5rem 0.5rem 1rem", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ marginBottom: "1.5rem", padding: "0.25rem 0.5rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: "10px",
-            background: "linear-gradient(135deg, #4CAF82, #2DD4BF)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "1.1rem", flexShrink: 0,
-          }}>🌿</div>
+          <img
+            src="/logo.png"
+            alt="Wellness"
+            style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }}
+            onError={e => {
+              const img = e.target as HTMLImageElement;
+              img.style.display = "none";
+              const fb = img.nextElementSibling as HTMLElement;
+              if (fb) fb.style.display = "flex";
+            }}
+          />
+          <div style={{ display: "none", width: 40, height: 40, borderRadius: "10px", background: "linear-gradient(135deg, #4CAF82, #2DD4BF)", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", flexShrink: 0 }}>🌿</div>
           <div>
-            <p style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 600, color: "var(--text)", lineHeight: 1.1 }}>Wellness</p>
-            <p style={{ margin: 0, fontSize: "0.65rem", color: "var(--text-muted)", letterSpacing: "0.03em" }}>mente leve, vida plena</p>
+            <p style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontSize: "1.05rem", fontWeight: 600, color: "var(--text)", lineHeight: 1.1 }}>Wellness</p>
+            <p style={{ margin: 0, fontSize: "0.62rem", color: "var(--text-muted)", letterSpacing: "0.02em" }}>mente leve, vida plena</p>
           </div>
         </div>
       </div>
@@ -89,9 +90,9 @@ export function Layout({ children }: { children: ReactNode }) {
 
       {/* User */}
       <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem", marginTop: "0.75rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.5rem 0.375rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.375rem 0.375rem" }}>
           {user?.image ? (
-            <img src={user.image} alt={user.name} style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--border)" }} />
+            <img src={user.image} alt={user.name} style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--border)", flexShrink: 0 }} />
           ) : (
             <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #4CAF82, #2DD4BF)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: "0.875rem", flexShrink: 0 }}>
               {user?.name?.[0]}
@@ -101,8 +102,8 @@ export function Layout({ children }: { children: ReactNode }) {
             <p style={{ margin: 0, fontWeight: 600, fontSize: "0.8rem", color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.name}</p>
             <p style={{ margin: 0, fontSize: "0.68rem", color: "var(--text-muted)" }}>{isAdmin ? "Administrador" : "Membro"}</p>
           </div>
-          <button onClick={() => logout.mutate()} title="Sair"
-            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "0.375rem", borderRadius: "0.5rem", display: "flex", transition: "all 0.15s" }}
+          <button onClick={onLogout} title="Sair"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "0.375rem", borderRadius: "0.5rem", display: "flex", flexShrink: 0, transition: "all 0.15s" }}
             onMouseOver={e => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "#ef4444"; }}
             onMouseOut={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "var(--text-muted)"; }}
           >
@@ -112,20 +113,44 @@ export function Layout({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
+}
+
+export function Layout({ children }: { children: ReactNode }) {
+  const { user, isAdmin } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const logout = trpc.auth.logout.useMutation({
+    onSuccess: () => window.location.href = "/",
+  });
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      {/* Desktop Sidebar */}
-      <aside style={{ width: 252, background: "var(--sidebar-bg)", borderRight: "1px solid var(--border)", position: "fixed", top: 0, left: 0, height: "100vh", overflowY: "auto", zIndex: 40, boxShadow: "2px 0 12px rgba(0,0,0,0.04)" }}
-        className="hidden md:block">
-        <SidebarContent />
+
+      {/* Desktop Sidebar — fixed, full height */}
+      <aside style={{
+        width: SIDEBAR_W,
+        flexShrink: 0,
+        background: "var(--sidebar-bg)",
+        borderRight: "1px solid var(--border)",
+        position: "fixed",
+        top: 0, left: 0,
+        height: "100vh",
+        overflowY: "auto",
+        zIndex: 40,
+        boxShadow: "2px 0 12px rgba(0,0,0,0.04)",
+      }}>
+        <SidebarInner user={user} isAdmin={isAdmin} onLogout={() => logout.mutate()} />
       </aside>
 
-      {/* Mobile header */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 54, background: "white", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1rem", zIndex: 50, boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}
-        className="flex md:hidden">
+      {/* Mobile top bar */}
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0, height: 54,
+        background: "white", borderBottom: "1px solid var(--border)",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 1rem", zIndex: 50, boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
+      }} className="flex md:hidden">
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <div style={{ width: 28, height: 28, borderRadius: "8px", background: "linear-gradient(135deg, #4CAF82, #2DD4BF)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.875rem" }}>🌿</div>
+          <img src="/logo.png" alt="Wellness" style={{ width: 30, height: 30, objectFit: "contain" }}
+            onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
           <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 600, color: "var(--text)" }}>Wellness</span>
         </div>
         <button onClick={() => setMobileOpen(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)", display: "flex", padding: "0.25rem" }}>
@@ -133,22 +158,25 @@ export function Layout({ children }: { children: ReactNode }) {
         </button>
       </div>
 
-      {/* Mobile overlay */}
+      {/* Mobile sidebar overlay */}
       {mobileOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 45 }} className="md:hidden">
-          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(2px)" }} onClick={() => setMobileOpen(false)} />
-          <aside style={{ width: 252, background: "white", position: "relative", zIndex: 1, height: "100%", boxShadow: "4px 0 24px rgba(0,0,0,0.15)" }}>
-            <SidebarContent />
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(2px)" }} onClick={() => setMobileOpen(false)} />
+          <aside style={{ width: SIDEBAR_W, background: "white", position: "relative", zIndex: 1, height: "100%", boxShadow: "4px 0 24px rgba(0,0,0,0.15)" }}>
+            <SidebarInner user={user} isAdmin={isAdmin} onLogout={() => { logout.mutate(); setMobileOpen(false); }} />
           </aside>
         </div>
       )}
 
-      {/* Main */}
-      <main className="md:ml-[252px]" style={{ flex: 1 }}>
-        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "2rem 1.5rem" }} className="md:pt-8 pt-[70px]">
+      {/* Main content — offset by sidebar width on desktop */}
+      <div style={{ flex: 1, marginLeft: 0 }} className="md:ml-[252px]">
+        {/* Spacer for mobile top bar */}
+        <div className="block md:hidden" style={{ height: 54 }} />
+        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "2rem 1.75rem" }}>
           {children}
         </div>
-      </main>
+      </div>
+
     </div>
   );
 }
