@@ -1,8 +1,9 @@
-import { router, publicProcedure, protectedProcedure } from "../trpc";
-import { users, accounts, sessions } from "../db/schema";
+import { router, publicProcedure, protectedProcedure } from "../trpc.js";
+import { users, accounts, sessions } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "../db";
+import { db } from "../db/index.js";
+import { randomUUID } from "crypto";
 
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
@@ -46,7 +47,6 @@ export const authRouter = router({
     }),
 });
 
-// Used by the Google OAuth Vercel Function
 export async function handleGoogleCallback(code: string): Promise<{ sessionId: string; expiresAt: Date }> {
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -79,7 +79,6 @@ export async function handleGoogleCallback(code: string): Promise<{ sessionId: s
     await db.update(users).set({ name: googleUser.name, image: googleUser.picture })
       .where(eq(users.id, userId));
   } else {
-    const { randomUUID } = await import("crypto");
     userId = randomUUID();
     const allUsers = await db.select().from(users);
     const isFirst = allUsers.length === 0;
@@ -104,10 +103,8 @@ export async function handleGoogleCallback(code: string): Promise<{ sessionId: s
     });
   }
 
-  const { randomUUID } = await import("crypto");
   const sessionId = randomUUID();
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
   await db.insert(sessions).values({ id: sessionId, userId, expiresAt });
 
   return { sessionId, expiresAt };
