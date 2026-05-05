@@ -33,7 +33,7 @@ export default function BookClubPage() {
   const addBook = trpc.bookclub.addBook.useMutation({ onSuccess: () => { utils.bookclub.getBooks.invalidate(); setShowAddBook(false); setNewBook({title:"",author:"",type:"",notes:""}); toast.success("Livro adicionado!"); } });
   const requestLoan = trpc.bookclub.requestLoan.useMutation({ onSuccess: () => { utils.bookclub.getBooks.invalidate(); utils.bookclub.getMyLoans.invalidate(); toast.success("Empréstimo solicitado!"); } });
   const approveLoan = trpc.bookclub.approveLoan.useMutation({ onSuccess: () => { utils.bookclub.getLoanRequests.invalidate(); utils.bookclub.getBooks.invalidate(); toast.success("Empréstimo aprovado!"); } });
-  const returnBook = trpc.bookclub.returnBook.useMutation({ onSuccess: () => { utils.bookclub.getMyLoans.invalidate(); toast.success("Devolução registrada!"); } });
+  const returnBook = trpc.bookclub.confirmReturn.useMutation({ onSuccess: () => { utils.bookclub.getMyLoans.invalidate(); toast.success("Devolução registrada!"); } });
   const suggestBook = trpc.bookclub.suggestBook.useMutation({ onSuccess: () => { utils.bookclub.getVotes.invalidate(); setShowSuggest(false); setSuggest({title:"",author:""}); toast.success("Sugestão adicionada!"); } });
   const vote = trpc.bookclub.vote.useMutation({ onSuccess: () => utils.bookclub.getVotes.invalidate() });
   const updateProgress = trpc.bookclub.updateProgress.useMutation({ onSuccess: () => utils.bookclub.getMyProgress.invalidate() });
