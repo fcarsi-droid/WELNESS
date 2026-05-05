@@ -3,6 +3,9 @@ import { useLocation } from "wouter";
 import { trpc } from "../lib/trpc";
 import { useAuth } from "../hooks/useAuth";
 
+// Logo as inline SVG/img — user will replace with actual logo file
+const LOGO_URL = "/logo.png"; // Upload logo.png to public/ folder
+
 export default function LoginPage() {
   const [, navigate] = useLocation();
   const { user, isLoading } = useAuth();
@@ -16,69 +19,72 @@ export default function LoginPage() {
   const isBanned = user?.status === "banned";
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      background: "linear-gradient(135deg, #f0f9f4 0%, #fafaf8 50%, #f9edce 100%)",
-    }}>
-      {/* Left panel — decorative */}
-      <div
-        style={{
-          flex: 1,
-          background: "linear-gradient(160deg, var(--primary) 0%, #1e6143 100%)",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "3rem",
-          position: "relative",
-          overflow: "hidden",
-        }}
-        className="hidden lg:flex"
-      >
-        {/* Decorative circles */}
-        <div style={{ position: "absolute", top: -80, right: -80, width: 300, height: 300, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
-        <div style={{ position: "absolute", bottom: -60, left: -60, width: 250, height: 250, borderRadius: "50%", background: "rgba(255,255,255,0.04)" }} />
-        <div style={{ position: "absolute", top: "40%", right: "10%", width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+    <div style={{ minHeight: "100vh", display: "flex", background: "var(--surface)" }}>
+      {/* Left panel */}
+      <div className="hidden lg:flex" style={{
+        flex: 1,
+        background: "linear-gradient(145deg, #1a2a3a 0%, #1e3a2e 50%, #2a1a3a 100%)",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "3rem",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Decorative blobs */}
+        {[
+          { top: "-10%", left: "-5%", size: 300, color: "rgba(76,175,130,0.15)" },
+          { top: "60%", right: "-8%", size: 250, color: "rgba(167,139,250,0.12)" },
+          { top: "30%", left: "60%", size: 180, color: "rgba(244,114,182,0.10)" },
+          { bottom: "-5%", left: "20%", size: 200, color: "rgba(96,165,250,0.12)" },
+        ].map((b, i) => (
+          <div key={i} style={{ position: "absolute", width: b.size, height: b.size, borderRadius: "50%", background: b.color, top: b.top, left: b.left, right: b.right, bottom: b.bottom, filter: "blur(40px)" }} />
+        ))}
 
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "3rem", fontWeight: 600, color: "white", margin: "0 0 1rem", lineHeight: 1.2 }}>
-            Wellness
-          </h1>
-          <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.8)", margin: "0 0 3rem", lineHeight: 1.6, maxWidth: 380 }}>
+        <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 400 }}>
+          {/* Logo */}
+          <div style={{ marginBottom: "2rem" }}>
+            <img src={LOGO_URL} alt="Wellness" style={{ width: 180, height: "auto" }}
+              onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          </div>
+
+          <p style={{ fontSize: "1.05rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: "2.5rem" }}>
             Seu espaço de bem-estar e cultura. Cuide de você, conecte-se com as pessoas e explore o que a vida tem de melhor.
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", textAlign: "left" }}>
             {[
-              { emoji: "🌿", label: "Tracking de humor, sono e saúde" },
-              { emoji: "🎬", label: "Grupos culturais e eventos" },
-              { emoji: "📚", label: "Clube da leitura e biblioteca" },
-              { emoji: "👥", label: "Comunidade corporativa" },
+              { emoji: "🌿", label: "Humor, sono, hidratação e alimentação" },
+              { emoji: "🎬", label: "Grupos culturais e agenda de eventos" },
+              { emoji: "📚", label: "Clube da leitura e biblioteca colaborativa" },
+              { emoji: "👥", label: "Comunidade e receitas saudáveis" },
             ].map(item => (
-              <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <span style={{ fontSize: "1.5rem" }}>{item.emoji}</span>
-                <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.95rem" }}>{item.label}</span>
+              <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "0.625rem 1rem", background: "rgba(255,255,255,0.06)", borderRadius: "0.875rem", backdropFilter: "blur(4px)" }}>
+                <span style={{ fontSize: "1.25rem" }}>{item.emoji}</span>
+                <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.9rem" }}>{item.label}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Right panel — login */}
-      <div style={{
-        width: "100%",
-        maxWidth: 480,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "2rem",
-      }}>
+      {/* Right panel */}
+      <div style={{ width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "2rem", margin: "0 auto" }}>
         <div className="fade-in" style={{ width: "100%", maxWidth: 380 }}>
-          {/* Mobile logo */}
+
+          {/* Mobile logo/brand */}
           <div className="lg:hidden" style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem", fontWeight: 600, color: "var(--primary)", margin: "0 0 0.5rem" }}>Wellness</h1>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", margin: 0 }}>Seu espaço de bem-estar e cultura</p>
+            <img src={LOGO_URL} alt="Wellness" style={{ width: 140, height: "auto", margin: "0 auto 0.75rem" }}
+              onError={e => {
+                const el = e.target as HTMLImageElement;
+                el.style.display = "none";
+                const next = el.nextElementSibling as HTMLElement;
+                if (next) next.style.display = "block";
+              }} />
+            <div style={{ display: "none" }}>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", fontWeight: 600, color: "var(--text)" }}>Wellness</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>mente leve, vida plena</p>
+            </div>
           </div>
 
           <div className="card" style={{ padding: "2.5rem" }}>
@@ -86,7 +92,7 @@ export default function LoginPage() {
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⏳</div>
                 <h2 style={{ margin: "0 0 0.75rem", fontSize: "1.25rem" }}>Aguardando aprovação</h2>
-                <p style={{ color: "var(--text-muted)", margin: "0 0 1.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                <p style={{ color: "var(--text-muted)", margin: "0 0 1.5rem", fontSize: "0.875rem", lineHeight: 1.6 }}>
                   Seu cadastro foi recebido. Um administrador irá aprovar seu acesso em breve.
                 </p>
                 <button className="btn-ghost" onClick={() => window.location.reload()} style={{ width: "100%", justifyContent: "center" }}>
@@ -97,40 +103,28 @@ export default function LoginPage() {
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🚫</div>
                 <h2 style={{ margin: "0 0 0.75rem", fontSize: "1.25rem" }}>Acesso suspenso</h2>
-                <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>
-                  Entre em contato com o administrador.
-                </p>
+                <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.875rem" }}>Entre em contato com o administrador.</p>
               </div>
             ) : (
               <>
                 <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-                  <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.5rem" }}>Entrar</h2>
+                  <h2 style={{ margin: "0 0 0.375rem", fontSize: "1.625rem", color: "var(--text)" }}>Bem-vindo(a)!</h2>
                   <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.875rem" }}>
-                    Use sua conta Google pessoal
+                    Entre com sua conta Google pessoal
                   </p>
                 </div>
 
-                <a
-                  href={authData?.url || "#"}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.875rem",
-                    padding: "0.875rem 1.5rem",
-                    background: "white",
-                    border: "1.5px solid var(--border)",
-                    borderRadius: "0.875rem",
-                    textDecoration: "none",
-                    color: "var(--text)",
-                    fontWeight: 500,
-                    fontSize: "0.95rem",
-                    transition: "all 0.2s ease",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                    width: "100%",
-                  }}
-                  onMouseOver={e => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.12)")}
-                  onMouseOut={e => (e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)")}
+                <a href={authData?.url || "#"} style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "0.875rem",
+                  padding: "0.875rem 1.5rem",
+                  background: "white", border: "1.5px solid var(--border)",
+                  borderRadius: "0.875rem", textDecoration: "none", color: "var(--text)",
+                  fontWeight: 600, fontSize: "0.9rem",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)", width: "100%",
+                }}
+                  onMouseOver={e => { e.currentTarget.style.borderColor = "#4CAF82"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(76,175,130,0.2)"; }}
+                  onMouseOut={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)"; }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -141,7 +135,7 @@ export default function LoginPage() {
                   Entrar com Google
                 </a>
 
-                <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                <p style={{ textAlign: "center", marginTop: "1.25rem", fontSize: "0.775rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
                   Acesso restrito. Novos usuários precisam de aprovação do administrador.
                 </p>
               </>
