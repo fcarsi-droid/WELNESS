@@ -1,4 +1,4 @@
-import { router, adminProcedure } from "../trpc";
+import { router, adminProcedure, protectedProcedure } from "../trpc";
 import { users, notifications } from "../db/schema";
 import { eq, ne } from "drizzle-orm";
 import { z } from "zod";
@@ -17,8 +17,7 @@ export const adminRouter = router({
     .mutation(async ({ ctx, input }) => {
       await ctx.db.update(users).set({ status: "active" }).where(eq(users.id, input.userId));
       await ctx.db.insert(notifications).values({
-        userId: input.userId,
-        type: "system",
+        userId: input.userId, type: "system",
         title: "Acesso aprovado!",
         message: "Seu acesso ao Wellness foi aprovado. Bem-vindo(a)!",
       } as any);
@@ -29,6 +28,13 @@ export const adminRouter = router({
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.update(users).set({ status: "banned" }).where(eq(users.id, input.userId));
+      return { success: true };
+    }),
+
+  reactivateUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.update(users).set({ status: "active" }).where(eq(users.id, input.userId));
       return { success: true };
     }),
 
