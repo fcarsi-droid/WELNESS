@@ -8,12 +8,12 @@ export default {
         display: ["'Playfair Display'", "serif"],
       },
       colors: {
-        primary: {
-          50: "#f0f9f4",
-          500: "#349668",
-          600: "#257852",
-          700: "#1e6143",
-        },
+        primary: { DEFAULT: "#4CAF82", dark: "#389968", light: "#edfaf3" },
+        pink: { 400: "#F472B6" },
+        orange: { 400: "#FB923C" },
+        purple: { 400: "#A78BFA" },
+        teal: { 400: "#2DD4BF" },
+        blue: { 400: "#60A5FA" },
       },
     },
   },
