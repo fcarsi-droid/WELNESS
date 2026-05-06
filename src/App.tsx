@@ -83,3 +83,4 @@ export default function App() {
     </trpc.Provider>
   );
 }
+// v2.0.0
