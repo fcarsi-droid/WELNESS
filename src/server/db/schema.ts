@@ -44,6 +44,9 @@ export const moodEntries = pgTable("mood_entries", {
   level: moodLevelEnum("level").notNull(),
   note: text("note"),
   date: text("date").notNull(),
+  time: text("time"), // HH:MM — allows multiple entries per day
+  reflection: text("reflection"), // "O que aconteceu?"
+  learning: text("learning"), // "O que você aprendeu sobre si mesmo hoje?"
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -190,6 +193,7 @@ export const culturalGroups = pgTable("cultural_groups", {
   description: text("description"),
   createdBy: text("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export const culturalGroupMembers = pgTable("cultural_group_members", {
@@ -233,6 +237,7 @@ export const culturalEvents = pgTable("cultural_events", {
   location: text("location"),
   eventDate: timestamp("event_date").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export const eventParticipants = pgTable("event_participants", {
