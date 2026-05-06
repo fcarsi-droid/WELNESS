@@ -78,7 +78,7 @@ export default function BookClubPage() {
     <div className="fade-in">
       <div style={{ marginBottom:"2rem" }}>
         <h1 style={{ margin:"0 0 0.25rem", fontSize:"1.75rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
-          <Library size={28} color="#FB923C"/> Clube da Leitura
+          <div style={{ width:48, height:48, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center" }}><Library size={24} color="white"/></div> Clube da Leitura
         </h1>
         <p style={{ margin:0, color:"var(--text-muted)" }}>Biblioteca compartilhada, clube e resenhas</p>
       </div>

@@ -95,7 +95,7 @@ export default function CommunityPage() {
     <div className="fade-in" style={{ maxWidth:680, margin:"0 auto" }}>
       <div style={{ marginBottom:"2rem" }}>
         <h1 style={{ margin:"0 0 0.25rem", fontSize:"1.75rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
-          <Newspaper size={28} color="#60A5FA"/> Comunidade
+          <div style={{ width:48, height:48, borderRadius:"50%", background:"#60A5FA", display:"flex", alignItems:"center", justifyContent:"center" }}><Newspaper size={24} color="white"/></div> Comunidade
         </h1>
         <p style={{ margin:0, color:"var(--text-muted)" }}>Compartilhe com a equipe</p>
       </div>

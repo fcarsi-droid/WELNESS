@@ -34,7 +34,7 @@ export default function WellnessPage() {
       <div style={{ marginBottom:"2rem", display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"1rem" }}>
         <div>
           <h1 style={{ margin:"0 0 0.25rem", fontSize:"1.75rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
-            <Heart size={28} color="#F472B6"/> Bem-Estar
+            <div style={{ width:48, height:48, borderRadius:"50%", background:"#F472B6", display:"flex", alignItems:"center", justifyContent:"center" }}><Heart size={24} color="white"/></div> Bem-Estar
           </h1>
           <p style={{ margin:0, color:"var(--text-muted)" }}>Recursos compartilhados pela equipe</p>
         </div>

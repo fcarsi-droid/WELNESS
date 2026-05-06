@@ -84,7 +84,7 @@ export default function CaloriesPage() {
       <div style={{ marginBottom:"2rem", display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"1rem" }}>
         <div>
           <h1 style={{ margin:"0 0 0.25rem", fontSize:"1.75rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
-            <Utensils size={28} color="#FB923C"/> Calorias
+            <div style={{ width:48, height:48, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center" }}><Utensils size={24} color="white"/></div> Calorias
           </h1>
           <p style={{ margin:0, color:"var(--text-muted)" }}>Acompanhe sua alimentação diária</p>
         </div>
@@ -102,7 +102,7 @@ export default function CaloriesPage() {
       <div className="card" style={{ padding:"1.5rem", marginBottom:"1.5rem" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.75rem" }}>
           <div>
-            <span style={{ fontSize:"2.5rem", fontWeight:700, color:over?"#ef4444":"var(--primary)", fontFamily:"'Playfair Display',serif" }}>{Math.round(totalCal)}</span>
+            <span style={{ fontSize:"2.5rem", fontWeight:700, color:over?"#ef4444":"var(--text)", fontFamily:"'Playfair Display',serif" }}>{Math.round(totalCal)}</span>
             <span style={{ fontSize:"1rem", color:"var(--text-muted)", marginLeft:"0.4rem" }}>/ {goal.dailyGoal} kcal</span>
           </div>
           {editGoal ? (
