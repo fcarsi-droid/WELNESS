@@ -1,6 +1,6 @@
 import { router, protectedProcedure } from "../trpc";
 import { calorieEntries, calorieGoals, foodItems } from "../db/schema";
-import { eq, and, desc, gte, ilike } from "drizzle-orm";
+import { eq, and, desc, gte, ilike, or } from "drizzle-orm";
 import { z } from "zod";
 
 export const caloriesRouter = router({
@@ -44,7 +44,27 @@ export const caloriesRouter = router({
     .query(async ({ ctx, input }) => {
       return ctx.db.select().from(foodItems)
         .where(ilike(foodItems.name, `%${input.q}%`))
-        .limit(10);
+        .orderBy(foodItems.name)
+        .limit(15);
+    }),
+
+  getAllFoods: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.select().from(foodItems).orderBy(foodItems.name);
+  }),
+
+  addFoodItem: protectedProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      caloriesPer100g: z.number().min(0),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const [created] = await ctx.db.insert(foodItems).values({
+        name: input.name,
+        caloriesPer100g: input.caloriesPer100g,
+        isDefault: false,
+        createdBy: ctx.user.id,
+      }).returning();
+      return created;
     }),
 
   addEntry: protectedProcedure
