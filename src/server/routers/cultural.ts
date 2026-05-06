@@ -1,6 +1,6 @@
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, adminProcedure } from "../trpc";
 import { culturalCategories, culturalGroups, culturalGroupMembers, culturalPosts, culturalPostLikes, culturalPostComments, culturalEvents, eventParticipants, users } from "../db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 export const culturalRouter = router({
@@ -19,7 +19,7 @@ export const culturalRouter = router({
     return ctx.db.select({
       id: culturalGroups.id, name: culturalGroups.name, description: culturalGroups.description,
       categoryId: culturalGroups.categoryId, createdAt: culturalGroups.createdAt, createdBy: culturalGroups.createdBy,
-    }).from(culturalGroups).orderBy(desc(culturalGroups.createdAt));
+    }).from(culturalGroups).where(isNull(culturalGroups.deletedAt)).orderBy(desc(culturalGroups.createdAt));
   }),
 
   createGroup: protectedProcedure
@@ -28,6 +28,14 @@ export const culturalRouter = router({
       const [g] = await ctx.db.insert(culturalGroups).values({ ...input, createdBy: ctx.user.id }).returning();
       await ctx.db.insert(culturalGroupMembers).values({ groupId: g.id, userId: ctx.user.id });
       return g;
+    }),
+
+  // Only admin can delete groups
+  deleteGroup: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.update(culturalGroups).set({ deletedAt: new Date() }).where(eq(culturalGroups.id, input.id));
+      return { success: true };
     }),
 
   joinGroup: protectedProcedure.input(z.object({ groupId: z.number() })).mutation(async ({ ctx, input }) => {
@@ -59,6 +67,11 @@ export const culturalRouter = router({
       const [p] = await ctx.db.insert(culturalPosts).values({ ...input, userId: ctx.user.id }).returning();
       return p;
     }),
+
+  deletePost: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(culturalPosts).where(and(eq(culturalPosts.id, input.id), eq(culturalPosts.userId, ctx.user.id)));
+    return { success: true };
+  }),
 
   likePost: protectedProcedure.input(z.object({ postId: z.number() })).mutation(async ({ ctx, input }) => {
     const [existing] = await ctx.db.select().from(culturalPostLikes).where(and(eq(culturalPostLikes.postId, input.postId), eq(culturalPostLikes.userId, ctx.user.id)));
@@ -100,7 +113,9 @@ export const culturalRouter = router({
       id: culturalEvents.id, title: culturalEvents.title, description: culturalEvents.description,
       location: culturalEvents.location, eventDate: culturalEvents.eventDate,
       groupId: culturalEvents.groupId, userId: culturalEvents.userId, userName: users.name,
-    }).from(culturalEvents).leftJoin(users, eq(culturalEvents.userId, users.id)).orderBy(culturalEvents.eventDate);
+    }).from(culturalEvents).leftJoin(users, eq(culturalEvents.userId, users.id))
+      .where(isNull(culturalEvents.deletedAt))
+      .orderBy(culturalEvents.eventDate);
   }),
 
   createEvent: protectedProcedure
@@ -109,6 +124,17 @@ export const culturalRouter = router({
       const [e] = await ctx.db.insert(culturalEvents).values({ ...input, eventDate: new Date(input.eventDate), userId: ctx.user.id }).returning();
       await ctx.db.insert(eventParticipants).values({ eventId: e.id, userId: ctx.user.id });
       return e;
+    }),
+
+  // Creator or admin can delete events
+  deleteEvent: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const [event] = await ctx.db.select().from(culturalEvents).where(eq(culturalEvents.id, input.id));
+      if (!event) throw new Error("Evento não encontrado");
+      if (event.userId !== ctx.user.id && ctx.user.role !== "admin") throw new Error("Sem permissão");
+      await ctx.db.update(culturalEvents).set({ deletedAt: new Date() }).where(eq(culturalEvents.id, input.id));
+      return { success: true };
     }),
 
   joinEvent: protectedProcedure.input(z.object({ eventId: z.number() })).mutation(async ({ ctx, input }) => {
