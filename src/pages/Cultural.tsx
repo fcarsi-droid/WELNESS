@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { trpc } from "../lib/trpc";
-import { Film, Plus, X, Calendar, MapPin, Users, Heart, MessageCircle, Send, Trash2, ExternalLink, Shield } from "lucide-react";
+import { Film, Plus, X, Calendar, MapPin, Users, Heart, MessageCircle, Send, Trash2, ExternalLink, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { formatRelativeTime } from "../lib/utils";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
@@ -86,8 +86,140 @@ function PostCard({ post, userId }: { post:any; userId?:string }) {
   );
 }
 
+function EventCard({ event, userId, isAdmin }: { event:any; userId?:string; isAdmin:boolean }) {
+  const [showDetails, setShowDetails] = useState(false);
+  const [comment, setComment] = useState("");
+  const utils = trpc.useUtils();
+  const isLink = event.location?.startsWith("http");
+
+  const { data: participants = [] } = trpc.cultural.getEventParticipants.useQuery({ eventId: event.id });
+  const { data: comments = [] } = trpc.cultural.getEventComments.useQuery({ eventId: event.id }, { enabled: showDetails });
+
+  const joinEvent = trpc.cultural.joinEvent.useMutation({ onSuccess: () => utils.cultural.getEventParticipants.invalidate({ eventId: event.id }) });
+  const deleteEvent = trpc.cultural.deleteEvent.useMutation({ onSuccess: () => { utils.cultural.getEvents.invalidate(); toast.success("Evento removido."); } });
+  const addComment = trpc.cultural.addEventComment.useMutation({ onSuccess: () => { utils.cultural.getEventComments.invalidate({ eventId: event.id }); setComment(""); } });
+  const delComment = trpc.cultural.deleteEventComment.useMutation({ onSuccess: () => utils.cultural.getEventComments.invalidate({ eventId: event.id }) });
+
+  const isParticipating = (participants as any[]).some(p => p.userId === userId);
+  const participantCount = (participants as any[]).length;
+
+  return (
+    <div className="card" style={{ padding:"1.25rem" }}>
+      <div style={{ display:"flex", gap:"1rem" }}>
+        {/* Date badge */}
+        <div style={{ width:52, height:52, borderRadius:"0.875rem", background:"#f5f3ff", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <span style={{ fontSize:"0.6rem", fontWeight:700, color:"#A78BFA", textTransform:"uppercase" }}>
+            {new Date(event.eventDate).toLocaleDateString("pt-BR",{month:"short"})}
+          </span>
+          <span style={{ fontSize:"1.25rem", fontWeight:700, color:"#7c3aed", lineHeight:1 }}>
+            {new Date(event.eventDate).getDate()}
+          </span>
+        </div>
+
+        {/* Info */}
+        <div style={{ flex:1, minWidth:0 }}>
+          <h3 style={{ margin:"0 0 0.25rem", fontFamily:"'DM Sans',sans-serif", fontSize:"0.95rem", fontWeight:600 }}>{event.title}</h3>
+          <div style={{ display:"flex", gap:"0.875rem", fontSize:"0.8rem", color:"var(--text-muted)", flexWrap:"wrap", alignItems:"center" }}>
+            <span>{new Date(event.eventDate).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span>
+            {event.location && (
+              isLink ? (
+                <a href={event.location} target="_blank" rel="noopener noreferrer"
+                  style={{ display:"flex", alignItems:"center", gap:"0.3rem", color:"#A78BFA", textDecoration:"none", fontWeight:500 }}>
+                  <ExternalLink size={12}/> Acessar link
+                </a>
+              ) : (
+                <span style={{ display:"flex", alignItems:"center", gap:"0.3rem" }}>
+                  <MapPin size={12}/>{event.location}
+                </span>
+              )
+            )}
+            <span>por {event.userName}</span>
+          </div>
+          {event.description && <p style={{ margin:"0.4rem 0 0", fontSize:"0.8rem", color:"var(--text-muted)" }}>{event.description}</p>}
+
+          {/* Participants avatars */}
+          <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginTop:"0.75rem" }}>
+            <div style={{ display:"flex" }}>
+              {(participants as any[]).slice(0,5).map((p:any, i:number) => (
+                <div key={p.id} style={{ marginLeft: i===0?0:-8, zIndex:5-i }}>
+                  <Avatar name={p.userName} image={p.userImage} size={24}/>
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize:"0.75rem", color:"var(--text-muted)" }}>
+              {participantCount === 0 ? "Ninguém confirmou ainda" :
+               participantCount === 1 ? "1 pessoa confirmada" :
+               `${participantCount} pessoas confirmadas`}
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display:"flex", flexDirection:"column", gap:"0.5rem", alignItems:"flex-end", flexShrink:0 }}>
+          <button onClick={()=>joinEvent.mutate({eventId:event.id})}
+            style={{
+              padding:"0.5rem 1rem", borderRadius:"0.75rem", border:"none", cursor:"pointer", fontSize:"0.8rem", fontWeight:600,
+              background:isParticipating?"#f0fdf4":"linear-gradient(135deg, #A78BFA, #7c3aed)",
+              color:isParticipating?"#16a34a":"white",
+              display:"flex", alignItems:"center", gap:"0.3rem",
+              transition:"all 0.15s",
+            }}>
+            {isParticipating ? <><Check size={14}/> Confirmado</> : "Participar"}
+          </button>
+          <button onClick={()=>setShowDetails(v=>!v)}
+            style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-muted)", fontSize:"0.75rem", display:"flex", alignItems:"center", gap:"0.25rem", padding:0 }}>
+            <MessageCircle size={13}/> {(comments as any[]).length > 0 ? (comments as any[]).length : ""} {showDetails ? "Fechar" : "Discussão"}
+            {showDetails ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+          </button>
+          {(event.userId===userId || isAdmin) && (
+            <button onClick={()=>{ if(window.confirm("Remover este evento?")) deleteEvent.mutate({id:event.id}); }}
+              style={{ background:"none", border:"none", cursor:"pointer", color:"#dc2626", fontSize:"0.75rem", display:"flex", alignItems:"center", gap:"0.25rem", padding:0 }}>
+              <Trash2 size={13}/> Remover
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Comments section */}
+      {showDetails && (
+        <div style={{ marginTop:"1rem", paddingTop:"1rem", borderTop:"1px solid var(--surface-2)" }}>
+          <p style={{ margin:"0 0 0.75rem", fontSize:"0.75rem", fontWeight:700, color:"var(--text-muted)", textTransform:"uppercase", letterSpacing:"0.05em" }}>
+            Discussão do evento
+          </p>
+          {(comments as any[]).length === 0 && (
+            <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", margin:"0 0 0.75rem" }}>Nenhum comentário ainda. Seja o primeiro!</p>
+          )}
+          {(comments as any[]).map(c=>(
+            <div key={c.id} style={{ display:"flex", gap:"0.625rem", marginBottom:"0.625rem" }}>
+              <Avatar name={c.userName} image={c.userImage} size={28}/>
+              <div style={{ background:"var(--surface-2)", borderRadius:"0.75rem", padding:"0.5rem 0.75rem", flex:1 }}>
+                <span style={{ fontWeight:600, fontSize:"0.75rem", display:"block", marginBottom:"0.2rem" }}>{c.userName}</span>
+                <p style={{ margin:0, fontSize:"0.8rem" }}>{c.content}</p>
+              </div>
+              {c.userId===userId && (
+                <button onClick={()=>delComment.mutate({id:c.id})} style={{ background:"none", border:"none", cursor:"pointer", color:"#d1d5db", padding:"0.2rem", alignSelf:"center", display:"flex" }}>
+                  <Trash2 size={13}/>
+                </button>
+              )}
+            </div>
+          ))}
+          <div style={{ display:"flex", gap:"0.5rem" }}>
+            <input value={comment} onChange={e=>setComment(e.target.value)} placeholder="Escreva algo sobre o evento..."
+              onKeyDown={e=>{ if(e.key==="Enter"&&comment.trim()) addComment.mutate({eventId:event.id,content:comment}); }}
+              style={{ flex:1, padding:"0.5rem 0.75rem", border:"1.5px solid var(--border)", borderRadius:"99px", fontFamily:"'DM Sans',sans-serif", fontSize:"0.8rem", outline:"none" }}/>
+            <button onClick={()=>comment.trim()&&addComment.mutate({eventId:event.id,content:comment})}
+              style={{ background:"#A78BFA", border:"none", borderRadius:"50%", width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"white", flexShrink:0 }}>
+              <Send size={14}/>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CulturalPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<"groups"|"events">("groups");
   const [selectedGroupId, setSelectedGroupId] = useState<number|null>(null);
   const [showNewGroup, setShowNewGroup] = useState(false);
@@ -101,19 +233,14 @@ export default function CulturalPage() {
   const { data: categories = [] } = trpc.cultural.getCategories.useQuery();
   const { data: groups = [] } = trpc.cultural.getGroups.useQuery();
   const { data: events = [] } = trpc.cultural.getEvents.useQuery();
-  const { data: eventParticipants = [] } = trpc.cultural.getEventParticipants.useQuery(
-    { eventId: 0 }, { enabled: false }
-  );
   const selectedGroup = (groups as any[]).find(g=>g.id===selectedGroupId);
   const { data: members = [] } = trpc.cultural.getMembers.useQuery({ groupId: selectedGroupId! }, { enabled: !!selectedGroupId });
   const { data: posts = [] } = trpc.cultural.getPosts.useQuery({ groupId: selectedGroupId! }, { enabled: !!selectedGroupId });
 
   const createGroup = trpc.cultural.createGroup.useMutation({ onSuccess: () => { utils.cultural.getGroups.invalidate(); setShowNewGroup(false); setNewGroup({name:"",description:"",categoryId:0}); toast.success("Grupo criado!"); } });
   const joinGroup = trpc.cultural.joinGroup.useMutation({ onSuccess: () => { utils.cultural.getMembers.invalidate(); toast.success("Participação atualizada!"); } });
-  const createEvent = trpc.cultural.createEvent.useMutation({ onSuccess: () => { utils.cultural.getEvents.invalidate(); setShowNewEvent(false); setNewEvent({title:"",description:"",location:"",eventDate:"",groupId:undefined}); toast.success("Evento criado!"); } });
-  const joinEvent = trpc.cultural.joinEvent.useMutation({ onSuccess: () => utils.cultural.getEventParticipants.invalidate() });
-  const deleteEvent = trpc.cultural.deleteEvent.useMutation({ onSuccess: () => { utils.cultural.getEvents.invalidate(); toast.success("Evento removido."); } });
   const deleteGroup = trpc.cultural.deleteGroup.useMutation({ onSuccess: () => { utils.cultural.getGroups.invalidate(); toast.success("Grupo removido."); } });
+  const createEvent = trpc.cultural.createEvent.useMutation({ onSuccess: () => { utils.cultural.getEvents.invalidate(); setShowNewEvent(false); setNewEvent({title:"",description:"",location:"",eventDate:"",groupId:undefined}); toast.success("Evento criado!"); } });
   const createPost = trpc.cultural.createPost.useMutation({ onSuccess: () => { utils.cultural.getPosts.invalidate(); setShowNewPost(false); setNewPost({content:"",title:"",rating:0}); toast.success("Publicado!"); } });
 
   const inputStyle = { width:"100%", padding:"0.625rem 0.875rem", border:"1.5px solid var(--border)", borderRadius:"0.75rem", fontFamily:"'DM Sans',sans-serif", fontSize:"0.875rem", outline:"none", boxSizing:"border-box" as const };
@@ -264,7 +391,7 @@ export default function CulturalPage() {
               <input value={newEvent.location} onChange={e=>setNewEvent(f=>({...f,location:e.target.value}))} placeholder="Endereço ou https://..." style={inputStyle}/>
             </div>
             <div style={{ gridColumn:"1/-1" }}>
-              <label style={{ display:"block", fontSize:"0.75rex", fontWeight:600, color:"var(--text-muted)", marginBottom:"0.3rem" }}>Grupo (opcional)</label>
+              <label style={{ display:"block", fontSize:"0.75rem", fontWeight:600, color:"var(--text-muted)", marginBottom:"0.3rem" }}>Grupo (opcional)</label>
               <select value={newEvent.groupId??""} onChange={e=>setNewEvent(f=>({...f,groupId:e.target.value?parseInt(e.target.value):undefined}))} style={{...inputStyle, background:"white"}}>
                 <option value="">Sem grupo</option>
                 {(groups as any[]).map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
@@ -303,9 +430,9 @@ export default function CulturalPage() {
                         {g.description && <p style={{ margin:"0 0 0.75rem", color:"var(--text-muted)", fontSize:"0.8rem", lineHeight:1.5 }}>{g.description}</p>}
                         <span style={{ fontSize:"0.75rem", color:"#A78BFA", fontWeight:500 }}>Ver grupo →</span>
                       </div>
-                      {user?.role==="admin" && (
+                      {isAdmin && (
                         <div style={{ marginTop:"0.75rem", borderTop:"1px solid var(--surface-2)", paddingTop:"0.625rem" }}>
-                          <button onClick={e=>{ e.stopPropagation(); if(confirm("Remover este grupo e todo seu conteúdo?")) deleteGroup.mutate({id:g.id}); }}
+                          <button onClick={e=>{ e.stopPropagation(); if(window.confirm("Remover este grupo?")) deleteGroup.mutate({id:g.id}); }}
                             style={{ background:"none", border:"none", cursor:"pointer", color:"#dc2626", fontSize:"0.75rem", display:"flex", alignItems:"center", gap:"0.3rem", padding:0 }}>
                             <Trash2 size={13}/> Remover grupo
                           </button>
@@ -328,58 +455,15 @@ export default function CulturalPage() {
 
       {/* Events tab */}
       {activeTab==="events" && (
-        <div style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
           {(events as any[]).length===0 ? (
             <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
               <IosIcon icon={Calendar} color="#A78BFA" size={28}/>
               <p style={{ marginTop:"1rem" }}>Nenhum evento ainda. Organize o primeiro!</p>
             </div>
-          ) : (events as any[]).map(e=>{
-            const isLink = e.location?.startsWith("http");
-            return (
-              <div key={e.id} className="card" style={{ padding:"1.25rem", display:"flex", gap:"1rem" }}>
-                <div style={{ width:52, height:52, borderRadius:"0.875rem", background:"#f5f3ff", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <span style={{ fontSize:"0.6rem", fontWeight:700, color:"#A78BFA", textTransform:"uppercase" }}>
-                    {new Date(e.eventDate).toLocaleDateString("pt-BR",{month:"short"})}
-                  </span>
-                  <span style={{ fontSize:"1.25rem", fontWeight:700, color:"#7c3aed", lineHeight:1 }}>
-                    {new Date(e.eventDate).getDate()}
-                  </span>
-                </div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <h3 style={{ margin:"0 0 0.25rem", fontFamily:"'DM Sans',sans-serif", fontSize:"0.95rem", fontWeight:600 }}>{e.title}</h3>
-                  <div style={{ display:"flex", gap:"1rem", fontSize:"0.8rem", color:"var(--text-muted)", flexWrap:"wrap", alignItems:"center" }}>
-                    <span>{new Date(e.eventDate).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span>
-                    {e.location && (
-                      isLink ? (
-                        <a href={e.location} target="_blank" rel="noopener noreferrer"
-                          style={{ display:"flex", alignItems:"center", gap:"0.3rem", color:"#A78BFA", textDecoration:"none", fontWeight:500 }}>
-                          <ExternalLink size={12}/> Acessar link
-                        </a>
-                      ) : (
-                        <span style={{ display:"flex", alignItems:"center", gap:"0.3rem" }}>
-                          <MapPin size={12}/>{e.location}
-                        </span>
-                      )
-                    )}
-                    <span>por {e.userName}</span>
-                  </div>
-                  {e.description && <p style={{ margin:"0.4rem 0 0", fontSize:"0.8rem", color:"var(--text-muted)" }}>{e.description}</p>}
-                </div>
-                <div style={{ display:"flex", gap:"0.5rem", alignItems:"center" }}>
-                  <button className="btn-primary" onClick={()=>joinEvent.mutate({eventId:e.id})} style={{ flexShrink:0 }}>
-                    Participar
-                  </button>
-                  {(e.userId===user?.id || user?.role==="admin") && (
-                    <button onClick={()=>{ if(confirm("Remover este evento?")) deleteEvent.mutate({id:e.id}); }}
-                      style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:"0.75rem", padding:"0.5rem 0.75rem", cursor:"pointer", color:"#dc2626", display:"flex", alignItems:"center", gap:"0.3rem", fontSize:"0.8rem", flexShrink:0 }}>
-                      <Trash2 size={14}/> Remover
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          ) : (events as any[]).map(e=>(
+            <EventCard key={e.id} event={e} userId={user?.id} isAdmin={isAdmin}/>
+          ))}
         </div>
       )}
     </div>
