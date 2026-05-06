@@ -18,8 +18,7 @@ export const culturalRouter = router({
   getGroups: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.select({
       id: culturalGroups.id, name: culturalGroups.name, description: culturalGroups.description,
-      categoryId: culturalGroups.categoryId, createdAt: culturalGroups.createdAt,
-      createdBy: culturalGroups.createdBy,
+      categoryId: culturalGroups.categoryId, createdAt: culturalGroups.createdAt, createdBy: culturalGroups.createdBy,
     }).from(culturalGroups).orderBy(desc(culturalGroups.createdAt));
   }),
 
@@ -71,12 +70,36 @@ export const culturalRouter = router({
     return { liked: true };
   }),
 
+  getPostLikes: protectedProcedure.input(z.object({ postId: z.number() })).query(async ({ ctx, input }) => {
+    const likes = await ctx.db.select().from(culturalPostLikes).where(eq(culturalPostLikes.postId, input.postId));
+    return { count: likes.length, userLiked: likes.some(l => l.userId === ctx.user.id) };
+  }),
+
+  getPostComments: protectedProcedure.input(z.object({ postId: z.number() })).query(async ({ ctx, input }) => {
+    return ctx.db.select({
+      id: culturalPostComments.id, content: culturalPostComments.content, createdAt: culturalPostComments.createdAt,
+      userId: culturalPostComments.userId, userName: users.name, userImage: users.image,
+    }).from(culturalPostComments).leftJoin(users, eq(culturalPostComments.userId, users.id))
+      .where(eq(culturalPostComments.postId, input.postId)).orderBy(culturalPostComments.createdAt);
+  }),
+
+  addPostComment: protectedProcedure
+    .input(z.object({ postId: z.number(), content: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const [c] = await ctx.db.insert(culturalPostComments).values({ postId: input.postId, userId: ctx.user.id, content: input.content }).returning();
+      return c;
+    }),
+
+  deletePostComment: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(culturalPostComments).where(and(eq(culturalPostComments.id, input.id), eq(culturalPostComments.userId, ctx.user.id)));
+    return { success: true };
+  }),
+
   getEvents: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.select({
       id: culturalEvents.id, title: culturalEvents.title, description: culturalEvents.description,
       location: culturalEvents.location, eventDate: culturalEvents.eventDate,
-      groupId: culturalEvents.groupId, userId: culturalEvents.userId,
-      userName: users.name,
+      groupId: culturalEvents.groupId, userId: culturalEvents.userId, userName: users.name,
     }).from(culturalEvents).leftJoin(users, eq(culturalEvents.userId, users.id)).orderBy(culturalEvents.eventDate);
   }),
 
