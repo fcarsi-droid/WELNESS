@@ -47,7 +47,8 @@ export default function Dashboard() {
   const [tipIndex, setTipIndex] = useState(0);
 
   const { data: moodHistory = [] } = trpc.mood.history.useQuery({ days: 14 });
-  const { data: todayMood } = trpc.mood.today.useQuery();
+  const { data: todayMoodArr = [] } = trpc.mood.today.useQuery();
+  const todayMood = (todayMoodArr as any[])[(todayMoodArr as any[]).length - 1];
   const { data: todaySleep } = trpc.sleep.today.useQuery();
   const { data: sleepHistory = [] } = trpc.sleep.history.useQuery({ days: 7 });
   const { data: todayHydration = { glasses:0, goalGlasses:8 } } = trpc.hydration.today.useQuery();
@@ -65,7 +66,7 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [(wellnessTips as any[]).length]);
 
-  const todayMoodData = MOODS.find(m => m.level === todayMood?.level);
+  const todayMoodData = MOODS.find(m => m.level === (todayMood as any)?.level);
   const avgSleep = (sleepHistory as any[]).length > 0
     ? Math.round((sleepHistory as any[]).reduce((a:number,e:any)=>a+e.durationMinutes,0)/(sleepHistory as any[]).length)
     : null;
