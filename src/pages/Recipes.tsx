@@ -34,7 +34,7 @@ export default function RecipesPage() {
       <div style={{ marginBottom:"2rem", display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"1rem" }}>
         <div>
           <h1 style={{ margin:"0 0 0.25rem", fontSize:"1.75rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
-            <ChefHat size={28} color="#2DD4BF" /> Receitas
+            <div style={{ width:48, height:48, borderRadius:"50%", background:"#2DD4BF", display:"flex", alignItems:"center", justifyContent:"center" }}><ChefHat size={24} color="white"/></div> Receitas
           </h1>
           <p style={{ margin:0, color:"var(--text-muted)" }}>Compartilhe e descubra receitas saudáveis</p>
         </div>

@@ -60,7 +60,7 @@ export default function SleepPage() {
     <div className="fade-in" style={{ maxWidth: 700, margin: "0 auto" }}>
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <Moon size={28} color="var(--primary)" /> Sono
+          <div style={{ width:48, height:48, borderRadius:"50%", background:"#A78BFA", display:"flex", alignItems:"center", justifyContent:"center" }}><Moon size={24} color="white"/></div> Sono
         </h1>
         <p style={{ margin: 0, color: "var(--text-muted)" }}>Registre seu sono diário</p>
       </div>

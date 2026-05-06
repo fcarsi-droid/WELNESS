@@ -37,7 +37,7 @@ export default function HydrationPage() {
     <div className="fade-in" style={{ maxWidth: 600, margin: "0 auto" }}>
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <Droplets size={28} color="var(--primary)" /> Hidratação
+          <div style={{ width:48, height:48, borderRadius:"50%", background:"#60A5FA", display:"flex", alignItems:"center", justifyContent:"center" }}><Droplets size={24} color="white"/></div> Hidratação
         </h1>
         <p style={{ margin: 0, color: "var(--text-muted)" }}>Acompanhe sua ingestão de água</p>
       </div>
