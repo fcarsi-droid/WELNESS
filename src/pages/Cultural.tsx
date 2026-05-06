@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { trpc } from "../lib/trpc";
-import { Film, Plus, X, Calendar, MapPin, Users, Heart, MessageCircle, Send, Trash2, ExternalLink } from "lucide-react";
+import { Film, Plus, X, Calendar, MapPin, Users, Heart, MessageCircle, Send, Trash2, ExternalLink, Shield } from "lucide-react";
 import { formatRelativeTime } from "../lib/utils";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
@@ -112,6 +112,8 @@ export default function CulturalPage() {
   const joinGroup = trpc.cultural.joinGroup.useMutation({ onSuccess: () => { utils.cultural.getMembers.invalidate(); toast.success("Participação atualizada!"); } });
   const createEvent = trpc.cultural.createEvent.useMutation({ onSuccess: () => { utils.cultural.getEvents.invalidate(); setShowNewEvent(false); setNewEvent({title:"",description:"",location:"",eventDate:"",groupId:undefined}); toast.success("Evento criado!"); } });
   const joinEvent = trpc.cultural.joinEvent.useMutation({ onSuccess: () => utils.cultural.getEventParticipants.invalidate() });
+  const deleteEvent = trpc.cultural.deleteEvent.useMutation({ onSuccess: () => { utils.cultural.getEvents.invalidate(); toast.success("Evento removido."); } });
+  const deleteGroup = trpc.cultural.deleteGroup.useMutation({ onSuccess: () => { utils.cultural.getGroups.invalidate(); toast.success("Grupo removido."); } });
   const createPost = trpc.cultural.createPost.useMutation({ onSuccess: () => { utils.cultural.getPosts.invalidate(); setShowNewPost(false); setNewPost({content:"",title:"",rating:0}); toast.success("Publicado!"); } });
 
   const inputStyle = { width:"100%", padding:"0.625rem 0.875rem", border:"1.5px solid var(--border)", borderRadius:"0.75rem", fontFamily:"'DM Sans',sans-serif", fontSize:"0.875rem", outline:"none", boxSizing:"border-box" as const };
@@ -295,10 +297,20 @@ export default function CulturalPage() {
                 </h2>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(240px, 1fr))", gap:"0.875rem" }}>
                   {catGroups.map((g:any)=>(
-                    <div key={g.id} className="card" style={{ padding:"1.25rem", cursor:"pointer" }} onClick={()=>setSelectedGroupId(g.id)}>
-                      <h3 style={{ margin:"0 0 0.375rem", fontFamily:"'DM Sans',sans-serif", fontSize:"0.95rem", fontWeight:600 }}>{g.name}</h3>
-                      {g.description && <p style={{ margin:"0 0 0.75rem", color:"var(--text-muted)", fontSize:"0.8rem", lineHeight:1.5 }}>{g.description}</p>}
-                      <span style={{ fontSize:"0.75rem", color:"#A78BFA", fontWeight:500 }}>Ver grupo →</span>
+                    <div key={g.id} className="card" style={{ padding:"1.25rem" }}>
+                      <div style={{ cursor:"pointer" }} onClick={()=>setSelectedGroupId(g.id)}>
+                        <h3 style={{ margin:"0 0 0.375rem", fontFamily:"'DM Sans',sans-serif", fontSize:"0.95rem", fontWeight:600 }}>{g.name}</h3>
+                        {g.description && <p style={{ margin:"0 0 0.75rem", color:"var(--text-muted)", fontSize:"0.8rem", lineHeight:1.5 }}>{g.description}</p>}
+                        <span style={{ fontSize:"0.75rem", color:"#A78BFA", fontWeight:500 }}>Ver grupo →</span>
+                      </div>
+                      {user?.role==="admin" && (
+                        <div style={{ marginTop:"0.75rem", borderTop:"1px solid var(--surface-2)", paddingTop:"0.625rem" }}>
+                          <button onClick={e=>{ e.stopPropagation(); if(confirm("Remover este grupo e todo seu conteúdo?")) deleteGroup.mutate({id:g.id}); }}
+                            style={{ background:"none", border:"none", cursor:"pointer", color:"#dc2626", fontSize:"0.75rem", display:"flex", alignItems:"center", gap:"0.3rem", padding:0 }}>
+                            <Trash2 size={13}/> Remover grupo
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -354,9 +366,17 @@ export default function CulturalPage() {
                   </div>
                   {e.description && <p style={{ margin:"0.4rem 0 0", fontSize:"0.8rem", color:"var(--text-muted)" }}>{e.description}</p>}
                 </div>
-                <button className="btn-primary" onClick={()=>joinEvent.mutate({eventId:e.id})} style={{ alignSelf:"center", flexShrink:0 }}>
-                  Participar
-                </button>
+                <div style={{ display:"flex", gap:"0.5rem", alignItems:"center" }}>
+                  <button className="btn-primary" onClick={()=>joinEvent.mutate({eventId:e.id})} style={{ flexShrink:0 }}>
+                    Participar
+                  </button>
+                  {(e.userId===user?.id || user?.role==="admin") && (
+                    <button onClick={()=>{ if(confirm("Remover este evento?")) deleteEvent.mutate({id:e.id}); }}
+                      style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:"0.75rem", padding:"0.5rem 0.75rem", cursor:"pointer", color:"#dc2626", display:"flex", alignItems:"center", gap:"0.3rem", fontSize:"0.8rem", flexShrink:0 }}>
+                      <Trash2 size={14}/> Remover
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}

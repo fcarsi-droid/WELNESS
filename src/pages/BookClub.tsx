@@ -143,7 +143,7 @@ export default function BookClubPage() {
           <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem" }}>
             {(books as any[]).length === 0 ? (
               <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-                <p style={{ fontSize:"3rem", margin:"0 0 1rem" }}>📚</p>
+                <div style={{ width:72, height:72, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><span style={{fontSize:"2rem"}}>📖</span></div>
                 <p>Nenhum livro cadastrado. Adicione o primeiro!</p>
               </div>
             ) : (books as any[]).map(b => {
@@ -377,7 +377,7 @@ export default function BookClubPage() {
 
           {(myLoans as any[]).length===0 && (books as any[]).filter(b=>b.ownerId===user?.id).length===0 && (
             <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-              <p style={{ fontSize:"3rem", margin:"0 0 1rem" }}>📚</p>
+              <div style={{ width:72, height:72, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><span style={{fontSize:"2rem"}}>📖</span></div>
               <p style={{ marginBottom:"1rem" }}>Você ainda não tem livros nem empréstimos.</p>
               <button className="btn-primary" onClick={()=>{ setActiveTab("library"); setShowAddBook(true); }} style={{ background:"linear-gradient(135deg, #FB923C, #ea580c)" }}>
                 <Plus size={16}/> Cadastrar meu primeiro livro
@@ -447,7 +447,7 @@ export default function BookClubPage() {
             </div>
           ) : (
             <div className="card" style={{ padding:"1.5rem", marginBottom:"1.5rem", textAlign:"center", color:"var(--text-muted)" }}>
-              <p style={{ fontSize:"2rem", margin:"0 0 0.5rem" }}>📚</p>
+              <div style={{ width:56, height:56, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 0.75rem" }}><span style={{fontSize:"1.5rem"}}>📖</span></div>
               <p>Nenhuma leitura ativa no momento.</p>
             </div>
           )}

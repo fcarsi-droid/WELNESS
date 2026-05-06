@@ -97,7 +97,7 @@ export default function WellnessPage() {
       {/* Resources */}
       {(filtered as any[]).length===0 ? (
         <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-          <p style={{ fontSize:"3rem", margin:"0 0 1rem" }}>💆</p>
+          <div style={{ width:72, height:72, borderRadius:"50%", background:"#F472B6", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><span style={{fontSize:"2rem"}}>💡</span></div>
           <p>Nenhum recurso ainda. Compartilhe algo que te ajudou!</p>
         </div>
       ) : (

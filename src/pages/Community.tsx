@@ -122,7 +122,7 @@ export default function CommunityPage() {
       <div style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
         {posts.length === 0 ? (
           <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-            <p style={{ fontSize:"3rem", margin:"0 0 1rem" }}>👥</p>
+            <div style={{ width:72, height:72, borderRadius:"50%", background:"#60A5FA", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><span style={{fontSize:"2rem"}}>💬</span></div>
             <p>Nenhuma publicação ainda. Seja o primeiro!</p>
           </div>
         ) : posts.map(p => <PostCard key={p.id} post={p}/>)}
