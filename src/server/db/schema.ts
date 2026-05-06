@@ -329,3 +329,12 @@ export const notifications = pgTable("notifications", {
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Event comments
+export const eventComments = pgTable("event_comments", {
+  id: serial("id").primaryKey(),
+  eventId: integer("event_id").notNull().references(() => culturalEvents.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
