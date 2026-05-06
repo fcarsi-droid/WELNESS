@@ -1,5 +1,5 @@
 import { router, protectedProcedure, adminProcedure } from "../trpc";
-import { culturalCategories, culturalGroups, culturalGroupMembers, culturalPosts, culturalPostLikes, culturalPostComments, culturalEvents, eventParticipants, users } from "../db/schema";
+import { culturalCategories, culturalGroups, culturalGroupMembers, culturalPosts, culturalPostLikes, culturalPostComments, culturalEvents, eventParticipants, eventComments, users } from "../db/schema";
 import { eq, and, desc, isNull } from "drizzle-orm";
 import { z } from "zod";
 
@@ -30,7 +30,6 @@ export const culturalRouter = router({
       return g;
     }),
 
-  // Only admin can delete groups
   deleteGroup: adminProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -108,6 +107,7 @@ export const culturalRouter = router({
     return { success: true };
   }),
 
+  // Events
   getEvents: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.select({
       id: culturalEvents.id, title: culturalEvents.title, description: culturalEvents.description,
@@ -126,7 +126,6 @@ export const culturalRouter = router({
       return e;
     }),
 
-  // Creator or admin can delete events
   deleteEvent: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -136,6 +135,19 @@ export const culturalRouter = router({
       await ctx.db.update(culturalEvents).set({ deletedAt: new Date() }).where(eq(culturalEvents.id, input.id));
       return { success: true };
     }),
+
+  // Participants
+  getEventParticipants: protectedProcedure.input(z.object({ eventId: z.number() })).query(async ({ ctx, input }) => {
+    return ctx.db.select({
+      id: eventParticipants.id,
+      userId: eventParticipants.userId,
+      joinedAt: eventParticipants.joinedAt,
+      userName: users.name,
+      userImage: users.image,
+    }).from(eventParticipants)
+      .leftJoin(users, eq(eventParticipants.userId, users.id))
+      .where(eq(eventParticipants.eventId, input.eventId));
+  }),
 
   joinEvent: protectedProcedure.input(z.object({ eventId: z.number() })).mutation(async ({ ctx, input }) => {
     const [existing] = await ctx.db.select().from(eventParticipants).where(and(eq(eventParticipants.eventId, input.eventId), eq(eventParticipants.userId, ctx.user.id)));
@@ -147,7 +159,24 @@ export const culturalRouter = router({
     return { joined: true };
   }),
 
-  getEventParticipants: protectedProcedure.input(z.object({ eventId: z.number() })).query(async ({ ctx, input }) => {
-    return ctx.db.select().from(eventParticipants).where(eq(eventParticipants.eventId, input.eventId));
+  // Event comments
+  getEventComments: protectedProcedure.input(z.object({ eventId: z.number() })).query(async ({ ctx, input }) => {
+    return ctx.db.select({
+      id: eventComments.id, content: eventComments.content, createdAt: eventComments.createdAt,
+      userId: eventComments.userId, userName: users.name, userImage: users.image,
+    }).from(eventComments).leftJoin(users, eq(eventComments.userId, users.id))
+      .where(eq(eventComments.eventId, input.eventId)).orderBy(eventComments.createdAt);
+  }),
+
+  addEventComment: protectedProcedure
+    .input(z.object({ eventId: z.number(), content: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const [c] = await ctx.db.insert(eventComments).values({ eventId: input.eventId, userId: ctx.user.id, content: input.content }).returning();
+      return c;
+    }),
+
+  deleteEventComment: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(eventComments).where(and(eq(eventComments.id, input.id), eq(eventComments.userId, ctx.user.id)));
+    return { success: true };
   }),
 });
