@@ -16,6 +16,7 @@ import CommunityPage from "./pages/Community";
 import CulturalPage from "./pages/Cultural";
 import BookClubPage from "./pages/BookClub";
 import AdminPage from "./pages/Admin";
+import ReportsPage from "./pages/Reports";
 import { Toaster } from "react-hot-toast";
 import "./index.css";
 
@@ -62,7 +63,7 @@ function AppRoutes() {
         <Route path="/community" component={CommunityPage}/>
         <Route path="/cultural" component={CulturalPage}/>
         <Route path="/book-club" component={BookClubPage}/>
-        <Route path="/reports"><ComingSoon title="Relatórios"/></Route>
+        <Route path="/reports" component={ReportsPage}/>
         <Route path="/admin" component={AdminPage}/>
         <Route><ComingSoon title="Página não encontrada"/></Route>
       </Switch>
