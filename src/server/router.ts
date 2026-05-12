@@ -10,6 +10,7 @@ import { wellnessRouter } from "./routers/wellness";
 import { communityRouter } from "./routers/community";
 import { culturalRouter } from "./routers/cultural";
 import { bookclubRouter } from "./routers/bookclub";
+import { reportsRouter } from "./routers/reports";
 
 export const appRouter = router({
   auth: authRouter,
@@ -23,6 +24,7 @@ export const appRouter = router({
   community: communityRouter,
   cultural: culturalRouter,
   bookclub: bookclubRouter,
+  reports: reportsRouter,
 });
 
 export type AppRouter = typeof appRouter;
