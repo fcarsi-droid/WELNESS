@@ -368,3 +368,23 @@ export const wellnessAlertDismissals = pgTable("wellness_alert_dismissals", {
   dismissedAt: timestamp("dismissed_at").defaultNow().notNull(),
   alertDate: text("alert_date").notNull(),
 });
+
+// Ergonomics
+export const ergonomicCheckins = pgTable("ergonomic_checkins", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(),
+  bodyScore: integer("body_score").notNull(), // 1-5
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const painReports = pgTable("pain_reports", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  region: text("region").notNull(), // neck, shoulders, upper_back, lower_back, wrists, eyes, head
+  intensity: integer("intensity").notNull(), // 1-5
+  note: text("note"),
+  date: text("date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

@@ -5,7 +5,7 @@ import { trpc } from "../../lib/trpc";
 import {
   LayoutDashboard, Smile, Moon, Droplets, Utensils,
   Newspaper, Heart, BarChart2, Settings,
-  ChefHat, Menu, X, LogOut, Film, Library
+  ChefHat, Menu, X, LogOut, Film, Library, Activity
 } from "lucide-react";
 
 const SIDEBAR_W = 252;
@@ -18,6 +18,7 @@ const navItems = [
   { label: "Calorias", icon: Utensils, href: "/calories", color: "#FB923C" },
   { label: "Receitas", icon: ChefHat, href: "/recipes", color: "#2DD4BF" },
   { label: "Bem-Estar", icon: Heart, href: "/wellness", color: "#F472B6" },
+  { label: "Ergonomia", icon: Activity, href: "/ergonomics", color: "#4CAF82" },
   { label: "Comunidade", icon: Newspaper, href: "/community", color: "#60A5FA" },
   { label: "Grupos Culturais", icon: Film, href: "/cultural", color: "#A78BFA" },
   { label: "Clube da Leitura", icon: Library, href: "/book-club", color: "#FB923C" },
