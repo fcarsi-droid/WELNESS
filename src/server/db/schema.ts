@@ -238,6 +238,7 @@ export const culturalEvents = pgTable("cultural_events", {
   eventDate: timestamp("event_date").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   deletedAt: timestamp("deleted_at"),
+  isFeatured: boolean("is_featured").default(false),
 });
 
 export const eventParticipants = pgTable("event_participants", {
@@ -337,4 +338,33 @@ export const eventComments = pgTable("event_comments", {
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Wellness alert settings (admin configures thresholds)
+export const wellnessAlertSettings = pgTable("wellness_alert_settings", {
+  id: serial("id").primaryKey(),
+  consecutiveDays: integer("consecutive_days").notNull().default(3),
+  percentageThreshold: integer("percentage_threshold").notNull().default(70),
+  windowDays: integer("window_days").notNull().default(7),
+  negativeLevel: integer("negative_level").notNull().default(2),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedBy: text("updated_by").references(() => users.id),
+});
+
+// Motivational content bank (admin manages)
+export const wellnessContent = pgTable("wellness_content", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // 'motivation' | 'tip' | 'reflection'
+  content: text("content").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdBy: text("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Track alert dismissals (one per user per day)
+export const wellnessAlertDismissals = pgTable("wellness_alert_dismissals", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  dismissedAt: timestamp("dismissed_at").defaultNow().notNull(),
+  alertDate: text("alert_date").notNull(),
 });
