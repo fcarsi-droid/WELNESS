@@ -89,6 +89,13 @@ export default function AdminPage() {
         <p style={{ margin:0, color:"var(--text-muted)" }}>Gerencie usuários, conteúdo e biblioteca</p>
       </div>
 
+      {/* Wellness alert link */}
+      <div style={{ marginBottom:"1.25rem" }}>
+        <a href="/admin/wellness-alert"
+          style={{ display:"inline-flex", alignItems:"center", gap:"0.625rem", padding:"0.875rem 1.25rem", background:"linear-gradient(135deg, #7c3aed, #F472B6)", borderRadius:"0.875rem", textDecoration:"none", color:"white", fontWeight:600, fontSize:"0.875rem" }}>
+          💜 Gerenciar Auto-monitoramento de Humor
+        </a>
+      </div>
       {/* Stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"1rem", marginBottom:"2rem" }}>
         {[
