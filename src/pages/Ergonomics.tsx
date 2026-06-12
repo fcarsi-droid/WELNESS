@@ -111,11 +111,11 @@ const GENERAL_TIPS = [
 ];
 
 const BODY_SCORES = [
-  { score: 1, label: "Ótimo", color: "#22c55e", bg: "#f0fdf4", emoji: "💪" },
-  { score: 2, label: "Bem", color: "#84cc16", bg: "#f7fee7", emoji: "😊" },
-  { score: 3, label: "Regular", color: "#eab308", bg: "#fefce8", emoji: "😐" },
-  { score: 4, label: "Desconforto", color: "#f97316", bg: "#fff7ed", emoji: "😕" },
-  { score: 5, label: "Com dor", color: "#ef4444", bg: "#fef2f2", emoji: "😣" },
+  { score: 1, label: "Ótimo", color: "#22c55e", bg: "#f0fdf4", border: "#bbf7d0", icon: "ti-mood-happy" },
+  { score: 2, label: "Bem", color: "#84cc16", bg: "#f7fee7", border: "#d9f99d", icon: "ti-mood-smile" },
+  { score: 3, label: "Regular", color: "#eab308", bg: "#fefce8", border: "#fde68a", icon: "ti-mood-neutral" },
+  { score: 4, label: "Desconforto", color: "#f97316", bg: "#fff7ed", border: "#fed7aa", icon: "ti-mood-confuzed" },
+  { score: 5, label: "Com dor", color: "#ef4444", bg: "#fef2f2", border: "#fecaca", icon: "ti-mood-sad" },
 ];
 
 function IosIcon({ icon: Icon, color, size = 20 }: { icon: any; color: string; size?: number }) {
@@ -201,7 +201,9 @@ export default function ErgonomicsPage() {
                   {[1, 2, 3, 4, 5].map(n => (
                     <button key={n} onClick={() => setPainIntensity(n)}
                       style={{ flex: 1, padding: "0.625rem 0.25rem", border: `2px solid ${painIntensity === n ? "#ef4444" : "var(--border)"}`, borderRadius: "0.75rem", background: painIntensity === n ? "#fef2f2" : "white", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.25rem", transition: "all 0.15s" }}>
-                      <span style={{ fontSize: "1.1rem" }}>{["😌", "🙂", "😐", "😕", "😣"][n - 1]}</span>
+                      <div style={{ width:32, height:32, borderRadius:9, background:["#f0fdf4","#f7fee7","#fefce8","#fff7ed","#fef2f2"][n-1], border:`1px solid ${["#bbf7d0","#d9f99d","#fde68a","#fed7aa","#fecaca"][n-1]}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <i className={`ti ${["ti-mood-happy","ti-mood-smile","ti-mood-neutral","ti-mood-confuzed","ti-mood-sad"][n-1]}`} style={{ fontSize:18, color:["#22c55e","#84cc16","#eab308","#f97316","#ef4444"][n-1] }} aria-hidden="true"/>
+                  </div>
                       <span style={{ fontSize: "0.65rem", color: painIntensity === n ? "#ef4444" : "var(--text-muted)", fontWeight: 500 }}>{["Leve", "Moderada", "Regular", "Forte", "Intensa"][n - 1]}</span>
                     </button>
                   ))}
@@ -245,8 +247,8 @@ export default function ErgonomicsPage() {
 
             {todayCheckin && !selectedCheckin ? (
               <div style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
-                <div style={{ width: 72, height: 72, borderRadius: "50%", background: todayScore?.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2.25rem", flexShrink: 0 }}>
-                  {todayScore?.emoji}
+                <div style={{ width: 72, height: 72, borderRadius: 20, background: todayScore?.bg, border: `1.5px solid ${todayScore?.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <i className={`ti ${todayScore?.icon}`} style={{ fontSize: 40, color: todayScore?.color }} aria-hidden="true"/>
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: "0 0 0.25rem", fontWeight: 600, fontSize: "1.1rem", color: todayScore?.color }}>{todayScore?.label}</p>
@@ -262,7 +264,9 @@ export default function ErgonomicsPage() {
                   {BODY_SCORES.map(s => (
                     <button key={s.score} onClick={() => setSelectedCheckin(s.score)}
                       style={{ flex: 1, minWidth: 80, padding: "1rem 0.5rem", border: `2px solid ${selectedCheckin === s.score ? s.color : "var(--border)"}`, borderRadius: "0.875rem", background: selectedCheckin === s.score ? s.bg : "white", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem", transition: "all 0.15s" }}>
-                      <span style={{ fontSize: "1.75rem" }}>{s.emoji}</span>
+                      <div style={{ width:44, height:44, borderRadius:13, background:s.bg, border:`1.5px solid ${s.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <i className={`ti ${s.icon}`} style={{ fontSize:24, color:s.color }} aria-hidden="true"/>
+                      </div>
                       <span style={{ fontSize: "0.72rem", fontWeight: 500, color: selectedCheckin === s.score ? s.color : "var(--text-muted)" }}>{s.label}</span>
                     </button>
                   ))}

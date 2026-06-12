@@ -4,11 +4,11 @@ import { useAuth } from "../hooks/useAuth";
 import { BarChart2, Download, Moon, Smile, Droplets, Utensils, BookOpen } from "lucide-react";
 
 const MOODS = [
-  { level:"1", emoji:"😞", label:"Péssimo", color:"#ef4444" },
-  { level:"2", emoji:"😕", label:"Ruim", color:"#f97316" },
-  { level:"3", emoji:"😐", label:"Ok", color:"#eab308" },
-  { level:"4", emoji:"😊", label:"Bem", color:"#22c55e" },
-  { level:"5", emoji:"😄", label:"Ótimo", color:"#3b82f6" },
+  { level:"1", icon:"ti-mood-sad", label:"Péssimo", color:"#ef4444", bg:"#fef2f2", border:"#fecaca" },
+  { level:"2", icon:"ti-mood-confuzed", label:"Ruim", color:"#f97316", bg:"#fff7ed", border:"#fed7aa" },
+  { level:"3", icon:"ti-mood-neutral", label:"Ok", color:"#eab308", bg:"#fefce8", border:"#fde68a" },
+  { level:"4", icon:"ti-mood-smile", label:"Bem", color:"#22c55e", bg:"#f0fdf4", border:"#bbf7d0" },
+  { level:"5", icon:"ti-mood-happy", label:"Ótimo", color:"#3b82f6", bg:"#eff6ff", border:"#bfdbfe" },
 ];
 
 function getMood(level: string) { return MOODS.find(m => m.level === level); }
@@ -63,7 +63,14 @@ function MoodChart({ data }: { data:{date:string;level:string}[] }) {
       </div>
       {/* Emoji strip */}
       <div style={{ display:"flex", gap:2, marginTop:8, flexWrap:"wrap" }}>
-        {data.map((d,i)=><span key={i} title={`${formatDate(d.date)}: ${getMood(d.level)?.label}`} style={{ fontSize:"0.875rem" }}>{getMood(d.level)?.emoji}</span>)}
+        {data.map((d,i)=>{
+          const m = getMood(d.level);
+          return (
+            <div key={i} title={`${formatDate(d.date)}: ${m?.label}`} style={{ width:22, height:22, borderRadius:6, background:m?.bg, border:`1px solid ${m?.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <i className={`ti ${m?.icon}`} style={{ fontSize:13, color:m?.color }} aria-hidden="true"/>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -191,7 +198,7 @@ export default function ReportsPage() {
   const avgMoodVal = moodEntries.length > 0
     ? moodEntries.reduce((a,m)=>a+parseInt(m.level),0)/moodEntries.length
     : 0;
-  const avgMoodEmoji = avgMoodVal > 0 ? getMood(String(Math.round(avgMoodVal)))?.emoji : "—";
+
 
   // Reflections with content
   const reflections = moodEntries.filter(m => m.reflection || m.learning)
@@ -238,7 +245,7 @@ export default function ReportsPage() {
         {/* Summary cards */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(160px,1fr))", gap:"1rem", marginBottom:"1.5rem" }}>
           {[
-            { icon:Smile, color:"#F472B6", label:"Humor médio", value:avgMoodEmoji||"—", sub:`${avgMoodVal.toFixed(1)}/5` },
+            { icon:Smile, color:"#F472B6", label:"Humor médio", value:avgMoodVal>0?avgMoodVal.toFixed(1):"—", sub:avgMoodVal>0?getMood(String(Math.round(avgMoodVal)))?.label||"":"Sem registros" },
             { icon:Moon, color:"#A78BFA", label:"Sono médio", value:avgSleep>0?formatDuration(avgSleep):"—", sub:`${sleepByDay.length} noites` },
             { icon:Droplets, color:"#60A5FA", label:"Meta hidratação", value:`${hydPct}%`, sub:`${hydHitDays}/${hydDays.length} dias` },
             { icon:Utensils, color:"#FB923C", label:"Média calorias", value:avgCal>0?`${avgCal}`:"—", sub:`meta: ${calorieGoal} kcal` },
@@ -363,7 +370,9 @@ export default function ReportsPage() {
                 return (
                   <div key={m.id} style={{ padding:"1rem", background:"var(--surface-2)", borderRadius:"0.875rem", borderLeft:`3px solid ${mood?.color}` }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"0.75rem", marginBottom:"0.625rem" }}>
-                      <span style={{ fontSize:"1.25rem" }}>{mood?.emoji}</span>
+                      <div style={{ width:32, height:32, borderRadius:9, background:mood?.bg, border:`1px solid ${mood?.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <i className={`ti ${mood?.icon}`} style={{ fontSize:18, color:mood?.color }} aria-hidden="true"/>
+                    </div>
                       <div>
                         <span style={{ fontWeight:600, fontSize:"0.875rem", color:mood?.color }}>{mood?.label}</span>
                         <span style={{ fontSize:"0.75rem", color:"var(--text-muted)", marginLeft:"0.5rem" }}>

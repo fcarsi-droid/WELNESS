@@ -5,14 +5,25 @@ import { Smile, Plus, Trash2, BookOpen } from "lucide-react";
 import toast from "react-hot-toast";
 
 const MOODS = [
-  { level: "1" as const, emoji: "😞", label: "Péssimo", color: "#ef4444", bg: "#fef2f2" },
-  { level: "2" as const, emoji: "😕", label: "Ruim", color: "#f97316", bg: "#fff7ed" },
-  { level: "3" as const, emoji: "😐", label: "Ok", color: "#eab308", bg: "#fefce8" },
-  { level: "4" as const, emoji: "😊", label: "Bem", color: "#22c55e", bg: "#f0fdf4" },
-  { level: "5" as const, emoji: "😄", label: "Ótimo", color: "#3b82f6", bg: "#eff6ff" },
+  { level: "1" as const, icon: "ti-mood-sad", label: "Péssimo", color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
+  { level: "2" as const, icon: "ti-mood-confuzed", label: "Ruim", color: "#f97316", bg: "#fff7ed", border: "#fed7aa" },
+  { level: "3" as const, icon: "ti-mood-neutral", label: "Ok", color: "#eab308", bg: "#fefce8", border: "#fde68a" },
+  { level: "4" as const, icon: "ti-mood-smile", label: "Bem", color: "#22c55e", bg: "#f0fdf4", border: "#bbf7d0" },
+  { level: "5" as const, icon: "ti-mood-happy", label: "Ótimo", color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
 ];
 
 function getMood(level: string) { return MOODS.find(m => m.level === level); }
+
+function MoodIcon({ level, size = 48 }: { level: string; size?: number }) {
+  const mood = getMood(level);
+  if (!mood) return null;
+  const radius = Math.round(size * 0.29);
+  return (
+    <div style={{ width: size, height: size, borderRadius: radius, background: mood.bg, border: `1.5px solid ${mood.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <i className={`ti ${mood.icon}`} style={{ fontSize: size * 0.54, color: mood.color }} aria-hidden="true"/>
+    </div>
+  );
+}
 
 function groupByDate(entries: any[]) {
   const groups: Record<string, any[]> = {};
@@ -41,9 +52,9 @@ function DayTimeline({ entries, date, onDelete, onSaveReflection }: any) {
         </span>
         {entries.length > 1 && (
           <div style={{ display:"flex", alignItems:"center", gap:"0.5rem" }}>
-            <span style={{ fontSize:"1rem" }}>{getMood(first.level)?.emoji}</span>
+            <MoodIcon level={first.level} size={28}/>
             <div style={{ width:32, height:2, background:`linear-gradient(90deg, ${getMood(first.level)?.color}, ${getMood(last.level)?.color})`, borderRadius:1 }}/>
-            <span style={{ fontSize:"1rem" }}>{getMood(last.level)?.emoji}</span>
+            <MoodIcon level={last.level} size={28}/>
           </div>
         )}
       </div>
@@ -54,12 +65,11 @@ function DayTimeline({ entries, date, onDelete, onSaveReflection }: any) {
           const isExpanded = expandedId === entry.id;
           const draft = drafts[entry.id];
           const hasReflection = entry.reflection || entry.learning;
-
           return (
             <div key={entry.id}>
               <div style={{ display:"flex", gap:"0.875rem", alignItems:"flex-start" }}>
                 <div style={{ display:"flex", flexDirection:"column", alignItems:"center", flexShrink:0 }}>
-                  <div style={{ width:38, height:38, borderRadius:"50%", background:mood?.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem" }}>{mood?.emoji}</div>
+                  <MoodIcon level={entry.level} size={36}/>
                   {i < entries.length-1 && <div style={{ width:2, height:20, background:"var(--border)", marginTop:4 }}/>}
                 </div>
                 <div style={{ flex:1, minWidth:0 }}>
@@ -77,7 +87,6 @@ function DayTimeline({ entries, date, onDelete, onSaveReflection }: any) {
                     </div>
                   </div>
                   {entry.note && <p style={{ margin:"0.2rem 0 0", fontSize:"0.8rem", color:"var(--text-muted)" }}>{entry.note}</p>}
-
                   {isExpanded && (
                     <div style={{ marginTop:"0.75rem", padding:"0.875rem", background:"var(--surface-2)", borderRadius:"0.75rem" }}>
                       {hasReflection && !draft ? (
@@ -85,9 +94,7 @@ function DayTimeline({ entries, date, onDelete, onSaveReflection }: any) {
                           {entry.reflection && <p style={{ margin:"0 0 0.4rem", fontSize:"0.8rem" }}><strong style={{ color:"var(--text-muted)", fontSize:"0.72rem", textTransform:"uppercase", letterSpacing:"0.04em" }}>O que aconteceu</strong><br/>{entry.reflection}</p>}
                           {entry.learning && <p style={{ margin:0, fontSize:"0.8rem" }}><strong style={{ color:"var(--text-muted)", fontSize:"0.72rem", textTransform:"uppercase", letterSpacing:"0.04em" }}>O que aprendi</strong><br/>{entry.learning}</p>}
                           <button onClick={()=>{ setDrafts(d=>({...d,[entry.id]:{reflection:entry.reflection||"",learning:entry.learning||""}})); }}
-                            style={{ marginTop:"0.625rem", background:"none", border:"none", cursor:"pointer", fontSize:"0.72rem", color:"var(--text-muted)", padding:0, textDecoration:"underline" }}>
-                            Editar reflexão
-                          </button>
+                            style={{ marginTop:"0.625rem", background:"none", border:"none", cursor:"pointer", fontSize:"0.72rem", color:"var(--text-muted)", padding:0, textDecoration:"underline" }}>Editar reflexão</button>
                         </>
                       ) : (
                         <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
@@ -121,8 +128,13 @@ function DayTimeline({ entries, date, onDelete, onSaveReflection }: any) {
       {moodChanged && !last.reflection && !last.learning && expandedId !== last.id && (
         <div style={{ marginTop:"0.875rem", padding:"0.875rem", background:"#eff6ff", borderRadius:"0.75rem", border:"1px solid #bfdbfe" }}>
           <p style={{ margin:"0 0 0.3rem", fontSize:"0.8rem", fontWeight:600, color:"#1d4ed8" }}>
-            Seu humor mudou hoje {getMood(first.level)?.emoji} → {getMood(last.level)?.emoji}
+            Seu humor mudou hoje
           </p>
+          <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", margin:"0.3rem 0 0.5rem" }}>
+            <MoodIcon level={first.level} size={24}/>
+            <span style={{ color:"var(--text-muted)", fontSize:"0.8rem" }}>→</span>
+            <MoodIcon level={last.level} size={24}/>
+          </div>
           <p style={{ margin:"0 0 0.5rem", fontSize:"0.75rem", color:"#3b82f6" }}>Que tal registrar uma reflexão sobre o que aconteceu?</p>
           <button onClick={()=>openReflection(last)}
             style={{ background:"#3b82f6", color:"white", border:"none", borderRadius:"0.5rem", padding:"0.35rem 0.75rem", cursor:"pointer", fontSize:"0.75rem", fontWeight:600 }}>
@@ -180,11 +192,13 @@ export default function MoodPage() {
         <div className="card fade-in" style={{ padding:"1.75rem", marginBottom:"1.5rem" }}>
           <p style={{ margin:"0 0 1.25rem", fontWeight:600 }}>Como você está agora?</p>
           <div style={{ display:"flex", gap:"0.75rem", marginBottom:"1.25rem", flexWrap:"wrap" }}>
-            {MOODS.map(m=>(
-              <button key={m.level} onClick={()=>setSelected(m.level)}
-                style={{ flex:1, minWidth:70, padding:"1rem 0.5rem", border:`2px solid ${selected===m.level?m.color:"var(--border)"}`, borderRadius:"0.875rem", background:selected===m.level?m.bg:"white", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"0.4rem", transition:"all 0.15s" }}>
-                <span style={{ fontSize:"1.75rem" }}>{m.emoji}</span>
-                <span style={{ fontSize:"0.75rem", fontWeight:500, color:selected===m.level?m.color:"var(--text-muted)" }}>{m.label}</span>
+            {MOODS.map(m => (
+              <button key={m.level} onClick={() => setSelected(m.level)}
+                style={{ flex:1, minWidth:70, padding:"1rem 0.5rem", border:`2px solid ${selected===m.level ? m.color : "var(--border)"}`, borderRadius:"0.875rem", background:selected===m.level ? m.bg : "white", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"0.5rem", transition:"all 0.15s" }}>
+                <div style={{ width:44, height:44, borderRadius:13, background:m.bg, border:`1.5px solid ${m.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <i className={`ti ${m.icon}`} style={{ fontSize:24, color:m.color }} aria-hidden="true"/>
+                </div>
+                <span style={{ fontSize:"0.75rem", fontWeight:500, color:selected===m.level ? m.color : "var(--text-muted)" }}>{m.label}</span>
               </button>
             ))}
           </div>
@@ -221,7 +235,9 @@ export default function MoodPage() {
 
       {(todayEntries as any[]).length===0 && sortedDates.length===0 && (
         <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-          <div style={{ width:64, height:64, borderRadius:"50%", background:"#fce7f3", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem", fontSize:"2rem" }}>😊</div>
+          <div style={{ width:72, height:72, borderRadius:21, background:"#eff6ff", border:"1.5px solid #bfdbfe", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}>
+            <i className="ti ti-mood-smile" style={{ fontSize:40, color:"#3b82f6" }} aria-hidden="true"/>
+          </div>
           <p>Nenhum registro ainda. Comece registrando como você está agora!</p>
         </div>
       )}
