@@ -40,7 +40,8 @@ export const sessions = pgTable("sessions", {
 // Mood
 export const moodEntries = pgTable("mood_entries", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(), // encrypted — does NOT reference users.id
+  lookupToken: text("lookup_token").notNull(), // sha256(userId+pepper) for WHERE queries
   level: moodLevelEnum("level").notNull(),
   note: text("note"),
   date: text("date").notNull(),
@@ -53,7 +54,8 @@ export const moodEntries = pgTable("mood_entries", {
 // Sleep
 export const sleepEntries = pgTable("sleep_entries", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(), // encrypted
+  lookupToken: text("lookup_token").notNull(),
   bedtime: text("bedtime").notNull(),
   wakeTime: text("wake_time").notNull(),
   durationMinutes: integer("duration_minutes").notNull(),
@@ -65,7 +67,8 @@ export const sleepEntries = pgTable("sleep_entries", {
 // Hydration
 export const hydrationEntries = pgTable("hydration_entries", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(), // encrypted
+  lookupToken: text("lookup_token").notNull(),
   glasses: integer("glasses").notNull().default(0),
   goalGlasses: integer("goal_glasses").notNull().default(8),
   date: text("date").notNull(),
@@ -83,7 +86,8 @@ export const foodItems = pgTable("food_items", {
 
 export const calorieEntries = pgTable("calorie_entries", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(), // encrypted
+  lookupToken: text("lookup_token").notNull(),
   foodItemId: integer("food_item_id").references(() => foodItems.id),
   foodName: text("food_name").notNull(),
   calories: real("calories").notNull(),
@@ -95,7 +99,8 @@ export const calorieEntries = pgTable("calorie_entries", {
 
 export const calorieGoals = pgTable("calorie_goals", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }).unique(),
+  userId: text("user_id").notNull(), // encrypted
+  lookupToken: text("lookup_token").notNull(),
   dailyGoal: real("daily_goal").notNull().default(2000),
 });
 
@@ -372,7 +377,8 @@ export const wellnessAlertDismissals = pgTable("wellness_alert_dismissals", {
 // Ergonomics
 export const ergonomicCheckins = pgTable("ergonomic_checkins", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(), // encrypted
+  lookupToken: text("lookup_token").notNull(),
   date: text("date").notNull(),
   bodyScore: integer("body_score").notNull(), // 1-5
   note: text("note"),
@@ -381,7 +387,8 @@ export const ergonomicCheckins = pgTable("ergonomic_checkins", {
 
 export const painReports = pgTable("pain_reports", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(), // encrypted
+  lookupToken: text("lookup_token").notNull(),
   region: text("region").notNull(), // neck, shoulders, upper_back, lower_back, wrists, eyes, head
   intensity: integer("intensity").notNull(), // 1-5
   note: text("note"),

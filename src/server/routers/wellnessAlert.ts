@@ -1,6 +1,7 @@
 import { router, protectedProcedure, adminProcedure } from "../trpc";
 import { moodEntries, wellnessAlertSettings, wellnessContent, wellnessAlertDismissals } from "../db/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
+import { getLookupToken } from "../lib/encryption";
 import { z } from "zod";
 
 export const wellnessAlertRouter = router({
@@ -22,8 +23,9 @@ export const wellnessAlertRouter = router({
     from.setDate(from.getDate() - Math.max(cfg.windowDays, cfg.consecutiveDays + 1));
     const fromStr = from.toISOString().split("T")[0];
 
+    const token = await getLookupToken(ctx.user.id);
     const entries = await ctx.db.select().from(moodEntries)
-      .where(and(eq(moodEntries.userId, ctx.user.id), gte(moodEntries.date, fromStr)))
+      .where(and(eq(moodEntries.lookupToken, token), gte(moodEntries.date, fromStr)))
       .orderBy(desc(moodEntries.date));
 
     if (entries.length === 0) return { show: false };
