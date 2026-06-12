@@ -20,7 +20,7 @@ export default function HydrationPage() {
   function add(n: number) {
     const newVal = Math.max(0, (entry as any).glasses + n);
     update.mutate({ glasses: newVal, date: selectedDate });
-    if (n > 0 && newVal === (entry as any).goalGlasses) toast.success("🎉 Meta atingida!");
+    if (n > 0 && newVal === (entry as any).goalGlasses) toast.success("Meta atingida!");
   }
 
   function saveGoal() {
@@ -84,7 +84,7 @@ export default function HydrationPage() {
           <div style={{ width:`${pct}%`, height:"100%", background:achieved?"var(--primary)":"#0ea5e9", borderRadius:"99px", transition:"width 0.4s ease" }}/>
         </div>
         <p style={{ margin:"0 0 1.5rem", fontSize:"0.875rem", color:achieved?"var(--primary)":"var(--text-muted)", fontWeight:achieved?600:400 }}>
-          {achieved ? "🎉 Meta atingida!" : `${pct}% da meta`}
+          {achieved ? "Meta atingida!" : `${pct}% da meta`}
         </p>
 
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"1.5rem", flexWrap:"wrap" }}>

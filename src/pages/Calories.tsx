@@ -4,10 +4,10 @@ import { Utensils, Plus, Trash2, Search, Settings, ChevronDown, X, BookOpen } fr
 import toast from "react-hot-toast";
 
 const MEALS = [
-  { key: "breakfast", label: "Café da manhã", emoji: "🌅" },
-  { key: "lunch", label: "Almoço", emoji: "☀️" },
-  { key: "dinner", label: "Jantar", emoji: "🌙" },
-  { key: "snack", label: "Lanche", emoji: "🍎" },
+  { key: "breakfast", label: "Café da manhã", icon: "ti-coffee", color: "#f97316", bg: "#fff7ed", border: "#fed7aa" },
+  { key: "lunch", label: "Almoço", icon: "ti-sun", color: "#eab308", bg: "#fefce8", border: "#fde68a" },
+  { key: "dinner", label: "Jantar", icon: "ti-moon", color: "#8b5cf6", bg: "#f5f3ff", border: "#ddd6fe" },
+  { key: "snack", label: "Lanche", icon: "ti-apple", color: "#22c55e", bg: "#f0fdf4", border: "#bbf7d0" },
 ];
 
 export default function CaloriesPage() {
@@ -140,7 +140,7 @@ export default function CaloriesPage() {
             {MEALS.map(m=>(
               <button key={m.key} onClick={()=>setSelectedMeal(m.key)}
                 style={{ padding:"0.4rem 0.875rem", border:`2px solid ${selectedMeal===m.key?"#FB923C":"var(--border)"}`, borderRadius:"99px", background:selectedMeal===m.key?"#fff7ed":"white", cursor:"pointer", fontSize:"0.8rem", fontWeight:500, color:selectedMeal===m.key?"#FB923C":"var(--text-muted)" }}>
-                {m.emoji} {m.label}
+                <i className={`ti ${m.icon}`} style={{ fontSize:15, color:m.color, verticalAlign:-2, marginRight:5 }} aria-hidden="true"/>{m.label}
               </button>
             ))}
           </div>
@@ -274,7 +274,7 @@ export default function CaloriesPage() {
           <div key={m.key} className="card" style={{ padding:"1.25rem" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.75rem" }}>
               <h3 style={{ margin:0, fontFamily:"'DM Sans',sans-serif", fontSize:"0.95rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
-                {m.emoji} {m.label}
+                <i className={`ti ${m.icon}`} style={{ fontSize:15, color:m.color, verticalAlign:-2, marginRight:5 }} aria-hidden="true"/>{m.label}
               </h3>
               <span style={{ fontSize:"0.875rem", fontWeight:600, color:"#FB923C" }}>{Math.round(m.total)} kcal</span>
             </div>
@@ -295,7 +295,9 @@ export default function CaloriesPage() {
 
         {(entries as any[]).length===0 && (
           <div style={{ textAlign:"center", padding:"3rem 2rem", color:"var(--text-muted)" }}>
-            <p style={{ fontSize:"2rem", margin:"0 0 0.5rem" }}>🍽️</p>
+            <div style={{ width:64, height:64, borderRadius:18, background:"#fff7ed", border:"1.5px solid #fed7aa", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 0.75rem" }}>
+              <i className="ti ti-tools-kitchen-2" style={{ fontSize:34, color:"#FB923C" }} aria-hidden="true"/>
+            </div>
             <p style={{ marginBottom:"1.5rem" }}>Nenhuma refeição registrada hoje</p>
             <button className="btn-primary" onClick={()=>setShowAdd(true)} style={{ background:"linear-gradient(135deg, #FB923C, #ea580c)" }}>
               <Plus size={16}/> Adicionar primeira refeição

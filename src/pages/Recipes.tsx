@@ -129,7 +129,7 @@ export default function RecipesPage() {
       {/* Recipe grid */}
       {recipes.length === 0 ? (
         <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-          <div style={{ width:72, height:72, borderRadius:"50%", background:"#2DD4BF", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><span style={{fontSize:"2rem"}}>🍽️</span></div>
+          <div style={{ width:72, height:72, borderRadius:"50%", background:"#2DD4BF", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><i className="ti ti-tools-kitchen-2" style={{ fontSize:34, color:"white" }} aria-hidden="true"/></div>
           <p style={{ marginBottom:"1.5rem" }}>Nenhuma receita ainda. Seja o primeiro a compartilhar!</p>
           <button className="btn-primary" onClick={() => setShowForm(true)} style={{ background:"linear-gradient(135deg, #2DD4BF, #0d9488)" }}><Plus size={16}/> Adicionar receita</button>
         </div>

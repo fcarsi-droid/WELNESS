@@ -4,7 +4,22 @@ import { formatDate } from "../lib/utils";
 import { Moon, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const QUALITY = ["😫","😔","😐","😊","😴"];
+const QUALITY = [
+  { icon:"ti-mood-sad", label:"Péssima", color:"#ef4444", bg:"#fef2f2", border:"#fecaca" },
+  { icon:"ti-mood-confuzed", label:"Ruim", color:"#f97316", bg:"#fff7ed", border:"#fed7aa" },
+  { icon:"ti-mood-neutral", label:"Ok", color:"#eab308", bg:"#fefce8", border:"#fde68a" },
+  { icon:"ti-mood-smile", label:"Boa", color:"#22c55e", bg:"#f0fdf4", border:"#bbf7d0" },
+  { icon:"ti-mood-happy", label:"Ótima", color:"#3b82f6", bg:"#eff6ff", border:"#bfdbfe" },
+];
+function QualityIcon({ q, size = 24 }: { q: number; size?: number }) {
+  const item = QUALITY[q-1];
+  if (!item) return null;
+  return (
+    <span style={{ width:size+10, height:size+10, borderRadius:Math.round((size+10)*0.28), background:item.bg, border:`1px solid ${item.border}`, display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+      <i className={`ti ${item.icon}`} style={{ fontSize:size, color:item.color }} aria-hidden="true"/>
+    </span>
+  );
+}
 
 function formatDuration(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -60,7 +75,7 @@ export default function SleepPage() {
     <div className="fade-in" style={{ maxWidth: 700, margin: "0 auto" }}>
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <div style={{ width:48, height:48, borderRadius:"50%", background:"#A78BFA", display:"flex", alignItems:"center", justifyContent:"center" }}><Moon size={24} color="white"/></div> Sono
+          <Moon size={28} color="var(--primary)" /> Sono
         </h1>
         <p style={{ margin: 0, color: "var(--text-muted)" }}>Registre seu sono diário</p>
       </div>
@@ -105,10 +120,13 @@ export default function SleepPage() {
             <div style={{ marginBottom: "1.25rem" }}>
               <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.75rem" }}>Qualidade do sono</label>
               <div style={{ display: "flex", gap: "0.5rem" }}>
-                {QUALITY.map((emoji, i) => (
+                {QUALITY.map((q, i) => (
                   <button key={i} onClick={() => setQuality(i + 1)}
-                    style={{ flex: 1, padding: "0.75rem", border: `2px solid ${quality === i + 1 ? "var(--primary)" : "var(--border)"}`, borderRadius: "0.75rem", background: quality === i + 1 ? "var(--primary-light)" : "white", cursor: "pointer", fontSize: "1.5rem" }}>
-                    {emoji}
+                    style={{ flex: 1, padding: "0.625rem 0.25rem", border: `2px solid ${quality === i + 1 ? q.color : "var(--border)"}`, borderRadius: "0.75rem", background: quality === i + 1 ? q.bg : "white", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem" }}>
+                    <span style={{ width:34, height:34, borderRadius:10, background:q.bg, border:`1px solid ${q.border}`, display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
+                      <i className={`ti ${q.icon}`} style={{ fontSize:20, color:q.color }} aria-hidden="true"/>
+                    </span>
+                    <span style={{ fontSize:"0.62rem", fontWeight:500, color: quality === i+1 ? q.color : "var(--text-muted)" }}>{q.label}</span>
                   </button>
                 ))}
               </div>
@@ -124,7 +142,7 @@ export default function SleepPage() {
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
             <div style={{ width: 72, height: 72, borderRadius: "1rem", background: "#eef2ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2.5rem", flexShrink: 0 }}>
-              🌙
+              <i className="ti ti-moon" style={{ fontSize:38, color:"#A78BFA" }} aria-hidden="true"/>
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ margin: "0 0 0.25rem", fontWeight: 600, fontSize: "1.1rem" }}>
@@ -132,7 +150,7 @@ export default function SleepPage() {
               </p>
               <p style={{ margin: "0 0 0.25rem", fontSize: "0.875rem", color: "var(--text-muted)" }}>
                 {today!.bedtime} → {today!.wakeTime}
-                {today!.quality && ` · ${QUALITY[today!.quality - 1]}`}
+                {today!.quality ? <span style={{ marginLeft:6, verticalAlign:"middle", display:"inline-flex" }}><QualityIcon q={today!.quality} size={14}/></span> : null}
               </p>
             </div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -150,12 +168,14 @@ export default function SleepPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {history.slice(0, 14).map(entry => (
               <div key={entry.id} className="card" style={{ padding: "0.875rem 1.25rem", display: "flex", alignItems: "center", gap: "1rem" }}>
-                <span style={{ fontSize: "1.25rem" }}>🌙</span>
+                <span style={{ width:34, height:34, borderRadius:10, background:"#f5f3ff", border:"1px solid #ddd6fe", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <i className="ti ti-moon" style={{ fontSize:18, color:"#A78BFA" }} aria-hidden="true"/>
+                </span>
                 <div style={{ flex: 1 }}>
                   <span style={{ fontWeight: 500 }}>{formatDuration(entry.durationMinutes)}</span>
                   <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginLeft: "0.5rem" }}>{entry.bedtime} → {entry.wakeTime}</span>
                 </div>
-                {entry.quality && <span style={{ fontSize: "1.1rem" }}>{QUALITY[entry.quality - 1]}</span>}
+                {entry.quality ? <QualityIcon q={entry.quality} size={16}/> : null}
                 <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{formatDate(entry.date)}</span>
               </div>
             ))}

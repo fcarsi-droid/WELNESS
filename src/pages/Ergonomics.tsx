@@ -5,15 +5,24 @@ import { formatRelativeTime } from "../lib/utils";
 import toast from "react-hot-toast";
 
 // Body regions config
-const REGIONS: Record<string, { label: string; icon: string; color: string }> = {
-  neck:       { label: "Pescoço",        icon: "🦴", color: "#F472B6" },
-  shoulders:  { label: "Ombros",         icon: "💪", color: "#A78BFA" },
-  upper_back: { label: "Costas (superior)", icon: "🔝", color: "#60A5FA" },
-  lower_back: { label: "Lombar",         icon: "⬇️", color: "#FB923C" },
-  wrists:     { label: "Punhos/Mãos",   icon: "🤲", color: "#2DD4BF" },
-  eyes:       { label: "Olhos",          icon: "👁️", color: "#4CAF82" },
-  head:       { label: "Cabeça",         icon: "🧠", color: "#ef4444" },
+const REGIONS: Record<string, { label: string; icon: string; color: string; bg: string }> = {
+  neck:       { label: "Pescoço",        icon: "ti-user", color: "#F472B6", bg: "#fdf2f8" },
+  shoulders:  { label: "Ombros",         icon: "ti-barbell", color: "#A78BFA", bg: "#f5f3ff" },
+  upper_back: { label: "Costas (superior)", icon: "ti-arrow-badge-up", color: "#60A5FA", bg: "#eff6ff" },
+  lower_back: { label: "Lombar",         icon: "ti-arrow-badge-down", color: "#FB923C", bg: "#fff7ed" },
+  wrists:     { label: "Punhos/Mãos",   icon: "ti-hand-stop", color: "#2DD4BF", bg: "#f0fdfa" },
+  eyes:       { label: "Olhos",          icon: "ti-eye", color: "#4CAF82", bg: "#f0fdf4" },
+  head:       { label: "Cabeça",         icon: "ti-brain", color: "#ef4444", bg: "#fef2f2" },
 };
+function RegionIcon({ regionKey, size = 24 }: { regionKey: string; size?: number }) {
+  const r = REGIONS[regionKey];
+  if (!r) return null;
+  return (
+    <span style={{ width:size+12, height:size+12, borderRadius:Math.round((size+12)*0.28), background:r.bg, border:`1px solid ${r.color}33`, display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+      <i className={`ti ${r.icon}`} style={{ fontSize:size, color:r.color }} aria-hidden="true"/>
+    </span>
+  );
+}
 
 // Ergonomic tips by region
 const TIPS: Record<string, string[]> = {
@@ -102,12 +111,12 @@ const EXERCISES: Record<string, { name: string; desc: string; reps: string }[]> 
 
 // General ergonomic tips
 const GENERAL_TIPS = [
-  { icon: "🪑", title: "Postura da cadeira", desc: "Joelhos em 90°, pés no chão, encosto reclinado entre 100-110°, apoio lombar ativo." },
-  { icon: "🖥️", title: "Altura do monitor", desc: "Topo da tela na altura dos olhos, a 50-70cm de distância. Use suporte se necessário." },
-  { icon: "⌨️", title: "Teclado e mouse", desc: "Cotovelos em 90°, pulsos neutros. Mouse próximo ao corpo, não esticado." },
-  { icon: "💡", title: "Iluminação", desc: "Luz natural de lado, não de frente ou atrás da tela. Evite reflexos no monitor." },
-  { icon: "⏰", title: "Pausas ativas", desc: "Levante-se a cada 45-60 min. Caminhe, alongue, hidrate-se." },
-  { icon: "🏃", title: "Ginástica laboral", desc: "A empresa oferece ginástica laboral! Participe regularmente — previne lesões e melhora o bem-estar." },
+  { icon: "ti-armchair", color: "#A78BFA", bg: "#f5f3ff", title: "Postura da cadeira", desc: "Joelhos em 90°, pés no chão, encosto reclinado entre 100-110°, apoio lombar ativo." },
+  { icon: "ti-device-desktop", color: "#60A5FA", bg: "#eff6ff", title: "Altura do monitor", desc: "Topo da tela na altura dos olhos, a 50-70cm de distância. Use suporte se necessário." },
+  { icon: "ti-keyboard", color: "#F472B6", bg: "#fdf2f8", title: "Teclado e mouse", desc: "Cotovelos em 90°, pulsos neutros. Mouse próximo ao corpo, não esticado." },
+  { icon: "ti-bulb", color: "#eab308", bg: "#fefce8", title: "Iluminação", desc: "Luz natural de lado, não de frente ou atrás da tela. Evite reflexos no monitor." },
+  { icon: "ti-clock", color: "#FB923C", bg: "#fff7ed", title: "Pausas ativas", desc: "Levante-se a cada 45-60 min. Caminhe, alongue, hidrate-se." },
+  { icon: "ti-run", color: "#4CAF82", bg: "#f0fdf4", title: "Ginástica laboral", desc: "A empresa oferece ginástica laboral! Participe regularmente — previne lesões e melhora o bem-estar." },
 ];
 
 const BODY_SCORES = [
@@ -185,7 +194,9 @@ export default function ErgonomicsPage() {
             {Object.entries(REGIONS).map(([key, r]) => (
               <button key={key} onClick={() => setSelectedRegion(selectedRegion === key ? null : key)}
                 style={{ padding: "0.875rem 0.5rem", border: `2px solid ${selectedRegion === key ? r.color : "var(--border)"}`, borderRadius: "0.875rem", background: selectedRegion === key ? r.color + "15" : "white", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem", transition: "all 0.15s" }}>
-                <span style={{ fontSize: "1.5rem" }}>{r.icon}</span>
+                <span style={{ width:38, height:38, borderRadius:11, background:r.bg, border:`1px solid ${r.color}33`, display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
+                  <i className={`ti ${r.icon}`} style={{ fontSize:21, color:r.color }} aria-hidden="true"/>
+                </span>
                 <span style={{ fontSize: "0.75rem", fontWeight: 500, color: selectedRegion === key ? r.color : "var(--text-muted)" }}>{r.label}</span>
               </button>
             ))}
@@ -297,7 +308,7 @@ export default function ErgonomicsPage() {
                   const r = REGIONS[p.region as keyof typeof REGIONS];
                   return (
                     <div key={p.id} className="card" style={{ padding: "0.875rem 1.25rem", display: "flex", alignItems: "center", gap: "1rem" }}>
-                      <span style={{ fontSize: "1.375rem" }}>{r?.icon}</span>
+                      <RegionIcon regionKey={p.region} size={18}/>
                       <div style={{ flex: 1 }}>
                         <span style={{ fontWeight: 600, fontSize: "0.875rem" }}>{r?.label}</span>
                         <span style={{ marginLeft: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>intensidade {p.intensity}/5</span>
@@ -317,7 +328,9 @@ export default function ErgonomicsPage() {
           {/* Ginástica laboral reminder */}
           <div style={{ marginTop: "1.5rem", padding: "1.25rem", background: "linear-gradient(135deg, #edfaf3, #f0fdf4)", borderRadius: "1rem", border: "1px solid #86efac" }}>
             <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-              <span style={{ fontSize: "2rem", flexShrink: 0 }}>🏃</span>
+              <span style={{ width:48, height:48, borderRadius:14, background:"#dcfce7", border:"1.5px solid #86efac", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <i className="ti ti-run" style={{ fontSize:26, color:"#16a34a" }} aria-hidden="true"/>
+              </span>
               <div>
                 <p style={{ margin: "0 0 0.375rem", fontWeight: 700, fontSize: "0.95rem", color: "#15803d" }}>Ginástica Laboral</p>
                 <p style={{ margin: 0, fontSize: "0.875rem", color: "#166534", lineHeight: 1.6 }}>
@@ -336,7 +349,7 @@ export default function ErgonomicsPage() {
           {topRegions.length > 0 && (
             <div style={{ marginBottom: "1.5rem" }}>
               <h2 style={{ fontFamily: "'DM Sans',sans-serif", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#ef4444", margin: "0 0 0.875rem" }}>
-                💡 Dicas personalizadas para você
+                <i className="ti ti-bulb" style={{ fontSize:13, verticalAlign:-2, marginRight:4 }} aria-hidden="true"/>Dicas personalizadas para você
               </h2>
               {topRegions.map(region => {
                 const r = REGIONS[region as keyof typeof REGIONS];
@@ -347,7 +360,7 @@ export default function ErgonomicsPage() {
                     <button onClick={() => setExpandedTip(isExpanded ? null : region)}
                       style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", padding: 0, fontFamily: "'DM Sans',sans-serif" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        <span style={{ fontSize: "1.375rem" }}>{r?.icon}</span>
+                        <RegionIcon regionKey={region} size={18}/>
                         <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{r?.label}</span>
                         <span className="badge" style={{ background: r?.color + "20", color: r?.color, fontSize: "0.65rem" }}>
                           {regionCounts[region]} registro{regionCounts[region] > 1 ? "s" : ""}
@@ -379,7 +392,9 @@ export default function ErgonomicsPage() {
             {GENERAL_TIPS.map((tip, i) => (
               <div key={i} className="card" style={{ padding: "1.25rem" }}>
                 <div style={{ display: "flex", gap: "0.875rem", alignItems: "flex-start" }}>
-                  <span style={{ fontSize: "1.75rem", flexShrink: 0 }}>{tip.icon}</span>
+                  <span style={{ width:42, height:42, borderRadius:12, background:(tip as any).bg, border:`1px solid ${(tip as any).color}33`, display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <i className={`ti ${tip.icon}`} style={{ fontSize:23, color:(tip as any).color }} aria-hidden="true"/>
+                  </span>
                   <div>
                     <p style={{ margin: "0 0 0.375rem", fontWeight: 700, fontSize: "0.875rem" }}>{tip.title}</p>
                     <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.6 }}>{tip.desc}</p>
@@ -397,7 +412,7 @@ export default function ErgonomicsPage() {
           {topRegions.length > 0 && (
             <div style={{ marginBottom: "1.5rem" }}>
               <h2 style={{ fontFamily: "'DM Sans',sans-serif", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#ef4444", margin: "0 0 0.875rem" }}>
-                🎯 Exercícios recomendados para você
+                <i className="ti ti-target" style={{ fontSize:13, verticalAlign:-2, marginRight:4 }} aria-hidden="true"/>Exercícios recomendados para você
               </h2>
               {topRegions.map(region => {
                 const r = REGIONS[region as keyof typeof REGIONS];
@@ -405,7 +420,7 @@ export default function ErgonomicsPage() {
                 return (
                   <div key={region} style={{ marginBottom: "1.5rem" }}>
                     <h3 style={{ fontFamily: "'DM Sans',sans-serif", fontSize: "0.875rem", fontWeight: 700, margin: "0 0 0.75rem", display: "flex", alignItems: "center", gap: "0.5rem", color: r?.color }}>
-                      {r?.icon} {r?.label}
+                      <RegionIcon regionKey={region} size={15}/> {r?.label}
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                       {exs.map((ex, i) => (
@@ -435,7 +450,7 @@ export default function ErgonomicsPage() {
                 <button onClick={() => setExpandedTip(isExpanded ? null : key + "_ex")}
                   style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", padding: 0, fontFamily: "'DM Sans',sans-serif" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                    <span style={{ fontSize: "1.25rem" }}>{r.icon}</span>
+                    <RegionIcon regionKey={key} size={16}/>
                     <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{r.label}</span>
                     <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{exs.length} exercícios</span>
                   </div>

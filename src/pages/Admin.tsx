@@ -93,7 +93,7 @@ export default function AdminPage() {
       <div style={{ marginBottom:"1.25rem" }}>
         <a href="/admin/wellness-alert"
           style={{ display:"inline-flex", alignItems:"center", gap:"0.625rem", padding:"0.875rem 1.25rem", background:"linear-gradient(135deg, #7c3aed, #F472B6)", borderRadius:"0.875rem", textDecoration:"none", color:"white", fontWeight:600, fontSize:"0.875rem" }}>
-          💜 Gerenciar Auto-monitoramento de Humor
+          <i className="ti ti-heart" style={{ fontSize:16, verticalAlign:-3, marginRight:6 }} aria-hidden="true"/>Gerenciar Auto-monitoramento de Humor
         </a>
       </div>
       {/* Stats */}
@@ -126,7 +126,7 @@ export default function AdminPage() {
         <div>
           {(pending as any[]).length > 0 && (
             <div style={{ marginBottom:"2rem" }}>
-              {sectionLabel(`⏳ Aguardando aprovação (${(pending as any[]).length})`)}
+              {sectionLabel(`Aguardando aprovação (${(pending as any[]).length})`)}
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
                 {(pending as any[]).map(u=>(
                   <div key={u.id} className="card" style={{ padding:"1rem 1.25rem", display:"flex", alignItems:"center", gap:"1rem", borderColor:"#fde68a", background:"#fefce8" }}>
@@ -304,7 +304,7 @@ export default function AdminPage() {
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginBottom:"0.2rem" }}>
                       <p style={{ margin:0, fontWeight:600, fontSize:"0.875rem" }}>{l.bookTitle}</p>
-                      {isOverdue && <span style={{ fontSize:"0.62rem", fontWeight:700, color:"#dc2626", background:"#fef2f2", padding:"0.1rem 0.4rem", borderRadius:"99px" }}>⚠ Atrasado</span>}
+                      {isOverdue && <span style={{ fontSize:"0.62rem", fontWeight:700, color:"#dc2626", background:"#fef2f2", padding:"0.1rem 0.4rem", borderRadius:"99px" }}>Atrasado</span>}
                     </div>
                     <p style={{ margin:0, fontSize:"0.72rem", color:"var(--text-muted)" }}>
                       {l.requesterName} · solicitado {formatDate(l.requestedAt)}

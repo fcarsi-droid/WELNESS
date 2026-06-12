@@ -104,7 +104,7 @@ export default function WellnessAlertAdmin() {
       {/* Settings panel */}
       {showSettings && (
         <div className="card fade-in" style={{ padding:"1.5rem", marginBottom:"1.5rem", borderColor:"#7c3aed30", background:"#faf5ff" }}>
-          <h3 style={{ margin:"0 0 1.25rem", fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:"1rem" }}>⚙️ Critérios para disparar o alerta</h3>
+          <h3 style={{ margin:"0 0 1.25rem", fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:"1rem" }}><i className="ti ti-settings" style={{ fontSize:15, verticalAlign:-2, marginRight:5 }} aria-hidden="true"/>Critérios para disparar o alerta</h3>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(200px,1fr))", gap:"1rem", marginBottom:"1.25rem" }}>
             {[
               { key:"consecutiveDays", label:"Dias consecutivos negativos", min:1, max:14, desc:"Quantos dias seguidos com humor negativo para alertar" },

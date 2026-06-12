@@ -6,10 +6,10 @@ import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 
 const TYPE_CONFIG = {
-  article: { label:"Artigo", emoji:"📰", color:"#60A5FA", bg:"#eff6ff" },
-  video: { label:"Vídeo", emoji:"🎥", color:"#F472B6", bg:"#fdf2f8" },
-  link: { label:"Link", emoji:"🔗", color:"#4CAF82", bg:"#edfaf3" },
-  podcast: { label:"Podcast", emoji:"🎙️", color:"#A78BFA", bg:"#f5f3ff" },
+  article: { label:"Artigo", icon:"ti-article", color:"#60A5FA", bg:"#eff6ff" },
+  video: { label:"Vídeo", icon:"ti-player-play", color:"#F472B6", bg:"#fdf2f8" },
+  link: { label:"Link", icon:"ti-link", color:"#4CAF82", bg:"#edfaf3" },
+  podcast: { label:"Podcast", icon:"ti-microphone", color:"#A78BFA", bg:"#f5f3ff" },
 };
 
 export default function WellnessPage() {
@@ -45,10 +45,10 @@ export default function WellnessPage() {
 
       {/* Filters */}
       <div style={{ display:"flex", gap:"0.5rem", marginBottom:"1.5rem", flexWrap:"wrap" }}>
-        {[["all","Todos","✨"], ...Object.entries(TYPE_CONFIG).map(([k,v])=>[k,v.label,v.emoji])].map(([key,label,emoji])=>(
+        {[["all","Todos","ti-sparkles"], ...Object.entries(TYPE_CONFIG).map(([k,v])=>[k,v.label,v.icon])].map(([key,label,icon])=>(
           <button key={key} onClick={()=>setFilter(key)}
-            style={{ padding:"0.4rem 0.875rem", border:`2px solid ${filter===key?"#F472B6":"var(--border)"}`, borderRadius:"99px", background:filter===key?"#fdf2f8":"white", cursor:"pointer", fontSize:"0.8rem", fontWeight:500, color:filter===key?"#ec4899":"var(--text-muted)", transition:"all 0.15s" }}>
-            {emoji} {label}
+            style={{ padding:"0.4rem 0.875rem", border:`2px solid ${filter===key?"#F472B6":"var(--border)"}`, borderRadius:"99px", background:filter===key?"#fdf2f8":"white", cursor:"pointer", fontSize:"0.8rem", fontWeight:500, color:filter===key?"#ec4899":"var(--text-muted)", transition:"all 0.15s", display:"inline-flex", alignItems:"center", gap:5 }}>
+            <i className={`ti ${icon}`} style={{ fontSize:14 }} aria-hidden="true"/>{label}
           </button>
         ))}
       </div>
@@ -67,7 +67,7 @@ export default function WellnessPage() {
                 {Object.entries(TYPE_CONFIG).map(([k,v])=>(
                   <button key={k} onClick={()=>setForm(f=>({...f,type:k as any}))}
                     style={{ padding:"0.4rem 0.875rem", border:`2px solid ${form.type===k?v.color:"var(--border)"}`, borderRadius:"99px", background:form.type===k?v.bg:"white", cursor:"pointer", fontSize:"0.8rem", fontWeight:500, color:form.type===k?v.color:"var(--text-muted)" }}>
-                    {v.emoji} {v.label}
+                    <i className={`ti ${v.icon}`} style={{ fontSize:14, verticalAlign:-2, marginRight:5 }} aria-hidden="true"/>{v.label}
                   </button>
                 ))}
               </div>
@@ -97,7 +97,7 @@ export default function WellnessPage() {
       {/* Resources */}
       {(filtered as any[]).length===0 ? (
         <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-          <div style={{ width:72, height:72, borderRadius:"50%", background:"#F472B6", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><span style={{fontSize:"2rem"}}>💡</span></div>
+          <div style={{ width:72, height:72, borderRadius:"50%", background:"#F472B6", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><i className="ti ti-bulb" style={{ fontSize:36, color:"white" }} aria-hidden="true"/></div>
           <p>Nenhum recurso ainda. Compartilhe algo que te ajudou!</p>
         </div>
       ) : (
@@ -107,7 +107,7 @@ export default function WellnessPage() {
             return (
               <div key={r.id} className="card" style={{ padding:"1.25rem" }}>
                 <div style={{ display:"flex", gap:"1rem", alignItems:"flex-start" }}>
-                  <div style={{ width:44, height:44, borderRadius:"0.875rem", background:t.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.375rem", flexShrink:0 }}>{t.emoji}</div>
+                  <div style={{ width:44, height:44, borderRadius:"0.875rem", background:t.bg, border:`1px solid ${t.color}33`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><i className={`ti ${t.icon}`} style={{ fontSize:22, color:t.color }} aria-hidden="true"/></div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:"0.5rem", marginBottom:"0.3rem" }}>
                       <h3 style={{ margin:0, fontFamily:"'DM Sans',sans-serif", fontSize:"0.95rem", fontWeight:600 }}>{r.title}</h3>

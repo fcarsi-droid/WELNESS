@@ -91,9 +91,9 @@ function SleepMoodCorrelation({ sleeps, moodByDate }: { sleeps:any[]; moodByDate
     const avgMoodGood = good.length > 0 ? good.reduce((a,s)=>a+parseInt(moodByDate[s.date].level),0)/good.length : null;
     if (avgMoodPoor !== null && avgMoodGood !== null) {
       if (avgMoodGood > avgMoodPoor + 0.5) {
-        insight = `Nos dias com 7h+ de sono, seu humor médio foi ${avgMoodGood.toFixed(1)}/5 — vs ${avgMoodPoor.toFixed(1)}/5 com menos de 6h. Dormir bem faz diferença! 💪`;
+        insight = `Nos dias com 7h+ de sono, seu humor médio foi ${avgMoodGood.toFixed(1)}/5 — vs ${avgMoodPoor.toFixed(1)}/5 com menos de 6h. Dormir bem faz diferença!`;
       } else {
-        insight = `Seu humor se manteve relativamente estável independente das horas de sono. Continue monitorando! 📊`;
+        insight = `Seu humor se manteve relativamente estável independente das horas de sono. Continue monitorando!`;
       }
     }
   }

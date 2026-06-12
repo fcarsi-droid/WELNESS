@@ -4,11 +4,11 @@ import { trpc } from "../lib/trpc";
 import { Smile, Moon, Droplets, Utensils, Film, Library, Heart, TrendingUp, Users, ChefHat, BarChart2, Calendar, MapPin, BookOpen, Clock } from "lucide-react";
 
 const MOODS = [
-  { level:"1", emoji:"😞", label:"Péssimo", color:"#ef4444" },
-  { level:"2", emoji:"😕", label:"Ruim", color:"#f97316" },
-  { level:"3", emoji:"😐", label:"Ok", color:"#eab308" },
-  { level:"4", emoji:"😊", label:"Bem", color:"#22c55e" },
-  { level:"5", emoji:"😄", label:"Ótimo", color:"#3b82f6" },
+  { level:"1", icon:"ti-mood-sad", label:"Péssimo", color:"#ef4444", bg:"#fef2f2", border:"#fecaca" },
+  { level:"2", icon:"ti-mood-confuzed", label:"Ruim", color:"#f97316", bg:"#fff7ed", border:"#fed7aa" },
+  { level:"3", icon:"ti-mood-neutral", label:"Ok", color:"#eab308", bg:"#fefce8", border:"#fde68a" },
+  { level:"4", icon:"ti-mood-smile", label:"Bem", color:"#22c55e", bg:"#f0fdf4", border:"#bbf7d0" },
+  { level:"5", icon:"ti-mood-happy", label:"Ótimo", color:"#3b82f6", bg:"#eff6ff", border:"#bfdbfe" },
 ];
 
 function formatDuration(minutes: number) {
@@ -56,6 +56,7 @@ export default function Dashboard() {
   const { data: calorieGoal = { dailyGoal:2000 } } = trpc.calories.goal.useQuery();
   const { data: wellnessTips = [] } = trpc.wellness.list.useQuery();
   const { data: events = [] } = trpc.cultural.getEvents.useQuery();
+  const { data: featuredEvent } = trpc.cultural.getFeaturedEvent.useQuery();
   const { data: books = [] } = trpc.bookclub.getBooks.useQuery();
 
   useEffect(() => {
@@ -105,14 +106,14 @@ export default function Dashboard() {
     return new Intl.DateTimeFormat("pt-BR",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).format(d);
   };
 
-  const typeEmoji: Record<string,string> = { article:"📰", video:"🎥", link:"🔗", podcast:"🎙️" };
+  const typeIcon: Record<string,{icon:string;color:string;bg:string}> = { article:{icon:"ti-article",color:"#3b82f6",bg:"#eff6ff"}, video:{icon:"ti-player-play",color:"#ef4444",bg:"#fef2f2"}, link:{icon:"ti-link",color:"#8b5cf6",bg:"#f5f3ff"}, podcast:{icon:"ti-microphone",color:"#f97316",bg:"#fff7ed"} };
 
   return (
     <div className="fade-in">
       {/* Header */}
       <div style={{ marginBottom:"2rem" }}>
         <h1 style={{ margin:"0 0 0.25rem", fontSize:"1.875rem" }}>
-          {greeting()}, {user?.name?.split(" ")[0]} 👋
+          {greeting()}, {user?.name?.split(" ")[0]}
         </h1>
         <p style={{ margin:0, color:"var(--text-muted)" }}>
           {new Intl.DateTimeFormat("pt-BR",{weekday:"long",day:"numeric",month:"long"}).format(new Date())}
@@ -122,7 +123,13 @@ export default function Dashboard() {
       {/* Stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(190px, 1fr))", gap:"1rem", marginBottom:"2rem" }}>
         <StatCard icon={Smile} iconColor="#F472B6" label="Humor hoje"
-          value={todayMoodData ? todayMoodData.emoji : "—"}
+          value={todayMoodData ? (
+            <span style={{ display:"inline-flex", alignItems:"center", gap:8 }}>
+              <span style={{ width:34, height:34, borderRadius:10, background:todayMoodData.bg, border:`1.5px solid ${todayMoodData.border}`, display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
+                <i className={`ti ${todayMoodData.icon}`} style={{ fontSize:20, color:todayMoodData.color }} aria-hidden="true"/>
+              </span>
+            </span>
+          ) : "—"}
           sub={todayMoodData ? todayMoodData.label : "Não registrado"} href="/mood"/>
         <StatCard icon={Moon} iconColor="#A78BFA" label="Sono"
           value={todaySleep ? formatDuration(todaySleep.durationMinutes) : avgSleep ? formatDuration(avgSleep) : "—"}
@@ -169,12 +176,41 @@ export default function Dashboard() {
               <div style={{ display:"flex", gap:"3px", marginTop:"0.875rem", flexWrap:"wrap" }}>
                 {moodChartData.map((entry:any, i:number) => {
                   const mood = MOODS.find(m=>m.level===entry.level);
-                  return <span key={i} title={entry.date} style={{ fontSize:"1rem" }}>{mood?.emoji}</span>;
+                  return (
+                    <div key={i} title={entry.date} style={{ width:20, height:20, borderRadius:6, background:mood?.bg, border:`1px solid ${mood?.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <i className={`ti ${mood?.icon}`} style={{ fontSize:12, color:mood?.color }} aria-hidden="true"/>
+                    </div>
+                  );
                 })}
               </div>
             </>
           )}
         </div>
+
+        {/* Featured event — full width if exists */}
+        {featuredEvent && (
+          <div style={{ gridColumn:"1/-1" }}>
+            <a href="/cultural" style={{ textDecoration:"none" }}>
+              <div style={{ background:"linear-gradient(135deg, #7c3aed 0%, #A78BFA 50%, #ec4899 100%)", borderRadius:"1.125rem", padding:"1.75rem", color:"white", position:"relative", overflow:"hidden", cursor:"pointer" }}>
+                <div style={{ position:"absolute", top:-30, right:-30, width:120, height:120, borderRadius:"50%", background:"rgba(255,255,255,0.08)" }}/>
+                <div style={{ position:"absolute", bottom:-20, left:-20, width:80, height:80, borderRadius:"50%", background:"rgba(255,255,255,0.06)" }}/>
+                <div style={{ position:"relative", zIndex:1 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginBottom:"0.75rem" }}>
+                    <span style={{ background:"rgba(255,255,255,0.2)", padding:"0.2rem 0.75rem", borderRadius:"99px", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase" }}>⭐ Destaque</span>
+                  </div>
+                  <h2 style={{ margin:"0 0 0.5rem", fontSize:"1.375rem", fontFamily:"'Playfair Display',serif", color:"white" }}>{featuredEvent.title}</h2>
+                  {featuredEvent.description && <p style={{ margin:"0 0 1rem", fontSize:"0.875rem", opacity:0.85, lineHeight:1.5 }}>{featuredEvent.description}</p>}
+                  <div style={{ display:"flex", gap:"1.25rem", fontSize:"0.8rem", opacity:0.9, flexWrap:"wrap", alignItems:"center" }}>
+                    <span><i className="ti ti-calendar" style={{ fontSize:14, verticalAlign:-2, marginRight:4 }} aria-hidden="true"/>{new Date(featuredEvent.eventDate).toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</span>
+                    <span><i className="ti ti-clock" style={{ fontSize:14, verticalAlign:-2, marginRight:4 }} aria-hidden="true"/>{new Date(featuredEvent.eventDate).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span>
+                    {featuredEvent.location && <span>{featuredEvent.location.startsWith("http") ? "Link disponível" : `${featuredEvent.location}`}</span>}
+                    <span>por {featuredEvent.userName}</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        )}
 
         {/* Events this week */}
         <div className="card" style={{ padding:"1.5rem" }}>
@@ -236,7 +272,7 @@ export default function Dashboard() {
               {newBooks.map((b:any) => (
                 <div key={b.id} style={{ display:"flex", gap:"0.875rem", alignItems:"center" }}>
                   <div style={{ width:40, height:48, borderRadius:"0.5rem", background:"linear-gradient(135deg, #fff7ed, #ffedd5)", border:"1px solid #fdba74", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:"1.1rem" }}>
-                    📖
+                    <i className="ti ti-book-2" style={{ fontSize:28, color:"#FB923C" }} aria-hidden="true"/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <p style={{ margin:"0 0 0.1rem", fontWeight:600, fontSize:"0.85rem", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{b.title}</p>
@@ -269,7 +305,9 @@ export default function Dashboard() {
                   style={{ display:"flex", gap:"0.75rem", alignItems:"flex-start", textDecoration:"none", padding:"0.75rem", background:"var(--surface-2)", borderRadius:"0.875rem", transition:"background 0.15s" }}
                   onMouseOver={e=>e.currentTarget.style.background="#e8e8e2"}
                   onMouseOut={e=>e.currentTarget.style.background="var(--surface-2)"}>
-                  <span style={{ fontSize:"1.125rem", flexShrink:0 }}>{typeEmoji[tip.type]||"🔗"}</span>
+                  <div style={{ width:28, height:28, borderRadius:8, background:typeIcon[tip.type]?.bg||"#f5f3ff", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <i className={`ti ${typeIcon[tip.type]?.icon||"ti-link"}`} style={{ fontSize:15, color:typeIcon[tip.type]?.color||"#8b5cf6" }} aria-hidden="true"/>
+                </div>
                   <div style={{ minWidth:0 }}>
                     <p style={{ margin:"0 0 0.15rem", fontSize:"0.82rem", fontWeight:600, color:"var(--text)", lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{tip.title}</p>
                     <p style={{ margin:0, fontSize:"0.7rem", color:"var(--text-muted)" }}>por {tip.userName}</p>

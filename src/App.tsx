@@ -27,7 +27,7 @@ const queryClient = new QueryClient({ defaultOptions: { queries: { retry:1, stal
 
 const ComingSoon = ({ title }:{ title:string }) => (
   <div style={{ textAlign:"center", padding:"4rem 2rem" }}>
-    <p style={{ fontSize:"3rem", margin:"0 0 1rem" }}>🚧</p>
+    <div style={{ width:64, height:64, borderRadius:18, background:"#fff7ed", border:"1.5px solid #fed7aa", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><i className="ti ti-barrier-block" style={{ fontSize:34, color:"#f97316" }} aria-hidden="true"/></div>
     <h2 style={{ margin:"0 0 0.5rem" }}>{title}</h2>
     <a href="/" className="btn-primary" style={{ textDecoration:"none", marginTop:"1rem", display:"inline-flex" }}>← Voltar</a>
   </div>

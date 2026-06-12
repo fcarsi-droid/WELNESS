@@ -143,7 +143,7 @@ export default function BookClubPage() {
           <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem" }}>
             {(books as any[]).length === 0 ? (
               <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-                <div style={{ width:72, height:72, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><span style={{fontSize:"2rem"}}>📖</span></div>
+                <div style={{ width:72, height:72, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><i className="ti ti-book-2" style={{ fontSize:30, color:"white" }} aria-hidden="true"/></div>
                 <p>Nenhum livro cadastrado. Adicione o primeiro!</p>
               </div>
             ) : (books as any[]).map(b => {
@@ -159,7 +159,7 @@ export default function BookClubPage() {
                   <div style={{ display:"flex", gap:"1rem", alignItems:"flex-start" }}>
                     {/* Book icon */}
                     <div style={{ width:48, height:56, borderRadius:"0.5rem", background:"linear-gradient(135deg, #fff7ed, #ffedd5)", border:"1px solid #fdba74", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.5rem", flexShrink:0 }}>
-                      📖
+                      <i className="ti ti-book-2" style={{ fontSize:30, color:"#FB923C" }} aria-hidden="true"/>
                     </div>
 
                     {/* Info */}
@@ -337,7 +337,7 @@ export default function BookClubPage() {
                         <div style={{ marginTop:"0.75rem", padding:"0.75rem", background:"var(--surface-2)", borderRadius:"0.75rem", fontSize:"0.8rem" }}>
                           {loan.status==="requested" && (
                             <div style={{ display:"flex", alignItems:"center", gap:"1rem", flexWrap:"wrap" }}>
-                              <span>📬 <strong>{loan.requesterName}</strong> solicitou este livro</span>
+                              <span><i className="ti ti-mail" style={{ fontSize:14, verticalAlign:-2, marginRight:4 }} aria-hidden="true"/><strong>{loan.requesterName}</strong> solicitou este livro</span>
                               {approvingLoan===loan.id ? (
                                 <div style={{ display:"flex", gap:"0.5rem", alignItems:"center" }}>
                                   <span style={{ fontSize:"0.75rem" }}>Prazo (dias):</span>
@@ -359,7 +359,7 @@ export default function BookClubPage() {
                           )}
                           {loan.status==="active" && (
                             <div style={{ display:"flex", alignItems:"center", gap:"1rem", flexWrap:"wrap" }}>
-                              <span>📖 Com <strong>{loan.requesterName}</strong> até {formatDate(loan.dueDate)}</span>
+                              <span><i className="ti ti-book-2" style={{ fontSize:14, verticalAlign:-2, marginRight:4 }} aria-hidden="true"/>Com <strong>{loan.requesterName}</strong> até {formatDate(loan.dueDate)}</span>
                               <button onClick={()=>confirmReturn.mutate({loanId:loan.id})}
                                 style={{ marginLeft:"auto", background:"var(--primary)", color:"white", border:"none", borderRadius:"0.5rem", padding:"0.3rem 0.75rem", cursor:"pointer", fontSize:"0.75rem", fontWeight:600, display:"flex", alignItems:"center", gap:"0.3rem" }}>
                                 <Check size={12}/> Confirmar devolução
@@ -377,7 +377,7 @@ export default function BookClubPage() {
 
           {(myLoans as any[]).length===0 && (books as any[]).filter(b=>b.ownerId===user?.id).length===0 && (
             <div style={{ textAlign:"center", padding:"4rem 2rem", color:"var(--text-muted)" }}>
-              <div style={{ width:72, height:72, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><span style={{fontSize:"2rem"}}>📖</span></div>
+              <div style={{ width:72, height:72, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}><i className="ti ti-book-2" style={{ fontSize:30, color:"white" }} aria-hidden="true"/></div>
               <p style={{ marginBottom:"1rem" }}>Você ainda não tem livros nem empréstimos.</p>
               <button className="btn-primary" onClick={()=>{ setActiveTab("library"); setShowAddBook(true); }} style={{ background:"linear-gradient(135deg, #FB923C, #ea580c)" }}>
                 <Plus size={16}/> Cadastrar meu primeiro livro
@@ -395,7 +395,7 @@ export default function BookClubPage() {
             <div className="card" style={{ padding:"1.5rem", marginBottom:"1.5rem", background:"linear-gradient(135deg, #fff7ed, #ffedd5)", borderColor:"#fdba74" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"1rem" }}>
                 <div>
-                  <span className="badge" style={{ background:"#FB923C", color:"white", marginBottom:"0.5rem", display:"inline-block" }}>📖 Leitura atual</span>
+                  <span className="badge" style={{ background:"#FB923C", color:"white", marginBottom:"0.5rem", display:"inline-block" }}> Leitura atual</span>
                   <h2 style={{ margin:"0 0 0.25rem", fontSize:"1.25rem" }}>{currentReading.externalTitle || "Livro do clube"}</h2>
                   {currentReading.externalAuthor && <p style={{ margin:0, color:"var(--text-muted)", fontSize:"0.875rem" }}>por {currentReading.externalAuthor}</p>}
                 </div>
@@ -429,7 +429,7 @@ export default function BookClubPage() {
               </div>
 
               {!showReview ? (
-                <button className="btn-ghost" onClick={()=>setShowReview(true)} style={{ fontSize:"0.8rem" }}>✍️ Escrever resenha</button>
+                <button className="btn-ghost" onClick={()=>setShowReview(true)} style={{ fontSize:"0.8rem" }}><i className="ti ti-pencil" style={{ fontSize:14, verticalAlign:-2, marginRight:4 }} aria-hidden="true"/>Escrever resenha</button>
               ) : (
                 <div style={{ marginTop:"0.875rem" }}>
                   <div style={{ display:"flex", gap:"0.25rem", marginBottom:"0.625rem" }}>
@@ -447,7 +447,7 @@ export default function BookClubPage() {
             </div>
           ) : (
             <div className="card" style={{ padding:"1.5rem", marginBottom:"1.5rem", textAlign:"center", color:"var(--text-muted)" }}>
-              <div style={{ width:56, height:56, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 0.75rem" }}><span style={{fontSize:"1.5rem"}}>📖</span></div>
+              <div style={{ width:56, height:56, borderRadius:"50%", background:"#FB923C", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 0.75rem" }}><i className="ti ti-book-2" style={{ fontSize:30, color:"white" }} aria-hidden="true"/></div>
               <p>Nenhuma leitura ativa no momento.</p>
             </div>
           )}
