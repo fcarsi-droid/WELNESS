@@ -2,7 +2,7 @@ import { router, protectedProcedure } from "../trpc";
 import { moodEntries } from "../db/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
 import { z } from "zod";
-import { encryptUserId, getLookupToken } from "../lib/encryption";
+import { getLookupToken } from "../lib/encryption";
 
 export const moodRouter = router({
   today: protectedProcedure.query(async ({ ctx }) => {
@@ -37,12 +37,9 @@ export const moodRouter = router({
       const now = new Date();
       const date = input.date ?? now.toISOString().split("T")[0];
       const time = input.time ?? now.toTimeString().slice(0, 5);
-      const [encryptedId, token] = await Promise.all([
-        encryptUserId(ctx.user.id),
-        getLookupToken(ctx.user.id),
-      ]);
+      const token = await getLookupToken(ctx.user.id);
       const [created] = await ctx.db.insert(moodEntries)
-        .values({ userId: encryptedId, lookupToken: token, level: input.level, note: input.note ?? null, reflection: input.reflection ?? null, learning: input.learning ?? null, date, time })
+        .values({ userId: token, lookupToken: token, level: input.level, note: input.note ?? null, reflection: input.reflection ?? null, learning: input.learning ?? null, date, time })
         .returning();
       return created;
     }),

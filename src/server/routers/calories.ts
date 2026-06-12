@@ -2,7 +2,7 @@ import { router, protectedProcedure } from "../trpc";
 import { calorieEntries, calorieGoals, foodItems } from "../db/schema";
 import { eq, and, desc, gte, ilike } from "drizzle-orm";
 import { z } from "zod";
-import { encryptUserId, getLookupToken } from "../lib/encryption";
+import { getLookupToken } from "../lib/encryption";
 
 export const caloriesRouter = router({
   todayEntries: protectedProcedure.query(async ({ ctx }) => {
@@ -33,12 +33,12 @@ export const caloriesRouter = router({
   setGoal: protectedProcedure
     .input(z.object({ dailyGoal: z.number().min(500).max(10000) }))
     .mutation(async ({ ctx, input }) => {
-      const [token, encryptedId] = await Promise.all([getLookupToken(ctx.user.id), encryptUserId(ctx.user.id)]);
+      const token = await getLookupToken(ctx.user.id);
       const [existing] = await ctx.db.select().from(calorieGoals).where(eq(calorieGoals.lookupToken, token));
       if (existing) {
         await ctx.db.update(calorieGoals).set({ dailyGoal: input.dailyGoal }).where(eq(calorieGoals.lookupToken, token));
       } else {
-        await ctx.db.insert(calorieGoals).values({ userId: encryptedId, lookupToken: token, dailyGoal: input.dailyGoal });
+        await ctx.db.insert(calorieGoals).values({ userId: token, lookupToken: token, dailyGoal: input.dailyGoal });
       }
       return { success: true };
     }),
@@ -64,9 +64,9 @@ export const caloriesRouter = router({
     .input(z.object({ foodName: z.string(), calories: z.number(), grams: z.number().optional(), meal: z.enum(["breakfast","lunch","dinner","snack"]).optional(), foodItemId: z.number().optional(), date: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const date = input.date ?? new Date().toISOString().split("T")[0];
-      const [token, encryptedId] = await Promise.all([getLookupToken(ctx.user.id), encryptUserId(ctx.user.id)]);
+      const token = await getLookupToken(ctx.user.id);
       const [created] = await ctx.db.insert(calorieEntries)
-        .values({ userId: encryptedId, lookupToken: token, date, ...input })
+        .values({ userId: token, lookupToken: token, date, ...input })
         .returning();
       return created;
     }),
@@ -75,8 +75,7 @@ export const caloriesRouter = router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const token = await getLookupToken(ctx.user.id);
-      await ctx.db.delete(calorieEntries)
-        .where(and(eq(calorieEntries.id, input.id), eq(calorieEntries.lookupToken, token)));
+      await ctx.db.delete(calorieEntries).where(and(eq(calorieEntries.id, input.id), eq(calorieEntries.lookupToken, token)));
       return { success: true };
     }),
 });

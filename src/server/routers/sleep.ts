@@ -2,7 +2,7 @@ import { router, protectedProcedure } from "../trpc";
 import { sleepEntries } from "../db/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
 import { z } from "zod";
-import { encryptUserId, getLookupToken } from "../lib/encryption";
+import { getLookupToken } from "../lib/encryption";
 
 export const sleepRouter = router({
   today: protectedProcedure.query(async ({ ctx }) => {
@@ -33,7 +33,7 @@ export const sleepRouter = router({
       let bMin = bH*60+bM; let wMin = wH*60+wM;
       if (wMin < bMin) wMin += 24*60;
       const durationMinutes = wMin - bMin;
-      const [token, encryptedId] = await Promise.all([getLookupToken(ctx.user.id), encryptUserId(ctx.user.id)]);
+      const token = await getLookupToken(ctx.user.id);
       const [existing] = await ctx.db.select().from(sleepEntries)
         .where(and(eq(sleepEntries.lookupToken, token), eq(sleepEntries.date, date)));
       const values = { bedtime: input.bedtime, wakeTime: input.wakeTime, durationMinutes, quality: input.quality ?? null };
@@ -41,7 +41,7 @@ export const sleepRouter = router({
         const [u] = await ctx.db.update(sleepEntries).set(values).where(eq(sleepEntries.id, existing.id)).returning();
         return u;
       }
-      const [c] = await ctx.db.insert(sleepEntries).values({ userId: encryptedId, lookupToken: token, date, ...values }).returning();
+      const [c] = await ctx.db.insert(sleepEntries).values({ userId: token, lookupToken: token, date, ...values }).returning();
       return c;
     }),
 

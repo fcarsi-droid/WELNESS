@@ -2,7 +2,7 @@ import { router, protectedProcedure } from "../trpc";
 import { ergonomicCheckins, painReports } from "../db/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
 import { z } from "zod";
-import { encryptUserId, getLookupToken } from "../lib/encryption";
+import { getLookupToken } from "../lib/encryption";
 
 const REGIONS = ["neck","shoulders","upper_back","lower_back","wrists","eyes","head"] as const;
 
@@ -19,7 +19,7 @@ export const ergonomicsRouter = router({
     .input(z.object({ bodyScore: z.number().min(1).max(5), note: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const today = new Date().toISOString().split("T")[0];
-      const [token, encryptedId] = await Promise.all([getLookupToken(ctx.user.id), encryptUserId(ctx.user.id)]);
+      const token = await getLookupToken(ctx.user.id);
       const [existing] = await ctx.db.select().from(ergonomicCheckins)
         .where(and(eq(ergonomicCheckins.lookupToken, token), eq(ergonomicCheckins.date, today)));
       if (existing) {
@@ -29,7 +29,7 @@ export const ergonomicsRouter = router({
         return u;
       }
       const [c] = await ctx.db.insert(ergonomicCheckins)
-        .values({ userId: encryptedId, lookupToken: token, date: today, bodyScore: input.bodyScore, note: input.note ?? null })
+        .values({ userId: token, lookupToken: token, date: today, bodyScore: input.bodyScore, note: input.note ?? null })
         .returning();
       return c;
     }),
@@ -38,9 +38,9 @@ export const ergonomicsRouter = router({
     .input(z.object({ region: z.enum(REGIONS), intensity: z.number().min(1).max(5), note: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const today = new Date().toISOString().split("T")[0];
-      const [token, encryptedId] = await Promise.all([getLookupToken(ctx.user.id), encryptUserId(ctx.user.id)]);
+      const token = await getLookupToken(ctx.user.id);
       const [c] = await ctx.db.insert(painReports)
-        .values({ userId: encryptedId, lookupToken: token, date: today, ...input, note: input.note ?? null })
+        .values({ userId: token, lookupToken: token, date: today, ...input, note: input.note ?? null })
         .returning();
       return c;
     }),
@@ -60,8 +60,7 @@ export const ergonomicsRouter = router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const token = await getLookupToken(ctx.user.id);
-      await ctx.db.delete(painReports)
-        .where(and(eq(painReports.id, input.id), eq(painReports.lookupToken, token)));
+      await ctx.db.delete(painReports).where(and(eq(painReports.id, input.id), eq(painReports.lookupToken, token)));
       return { success: true };
     }),
 

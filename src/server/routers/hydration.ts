@@ -2,7 +2,7 @@ import { router, protectedProcedure } from "../trpc";
 import { hydrationEntries } from "../db/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
 import { z } from "zod";
-import { encryptUserId, getLookupToken } from "../lib/encryption";
+import { getLookupToken } from "../lib/encryption";
 
 export const hydrationRouter = router({
   today: protectedProcedure.query(async ({ ctx }) => {
@@ -37,7 +37,7 @@ export const hydrationRouter = router({
     .input(z.object({ glasses: z.number().min(0).max(30), goalGlasses: z.number().min(1).max(30).optional(), date: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const date = input.date ?? new Date().toISOString().split("T")[0];
-      const [token, encryptedId] = await Promise.all([getLookupToken(ctx.user.id), encryptUserId(ctx.user.id)]);
+      const token = await getLookupToken(ctx.user.id);
       const [existing] = await ctx.db.select().from(hydrationEntries)
         .where(and(eq(hydrationEntries.lookupToken, token), eq(hydrationEntries.date, date)));
       if (existing) {
@@ -47,7 +47,7 @@ export const hydrationRouter = router({
         return u;
       }
       const [c] = await ctx.db.insert(hydrationEntries)
-        .values({ userId: encryptedId, lookupToken: token, date, glasses: input.glasses, goalGlasses: input.goalGlasses ?? 8 })
+        .values({ userId: token, lookupToken: token, date, glasses: input.glasses, goalGlasses: input.goalGlasses ?? 8 })
         .returning();
       return c;
     }),
