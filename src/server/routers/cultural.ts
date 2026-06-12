@@ -113,10 +113,34 @@ export const culturalRouter = router({
       id: culturalEvents.id, title: culturalEvents.title, description: culturalEvents.description,
       location: culturalEvents.location, eventDate: culturalEvents.eventDate,
       groupId: culturalEvents.groupId, userId: culturalEvents.userId, userName: users.name,
+      isFeatured: culturalEvents.isFeatured,
     }).from(culturalEvents).leftJoin(users, eq(culturalEvents.userId, users.id))
       .where(isNull(culturalEvents.deletedAt))
       .orderBy(culturalEvents.eventDate);
   }),
+
+  getFeaturedEvent: protectedProcedure.query(async ({ ctx }) => {
+    const [event] = await ctx.db.select({
+      id: culturalEvents.id, title: culturalEvents.title, description: culturalEvents.description,
+      location: culturalEvents.location, eventDate: culturalEvents.eventDate,
+      groupId: culturalEvents.groupId, userId: culturalEvents.userId, userName: users.name,
+      isFeatured: culturalEvents.isFeatured,
+    }).from(culturalEvents).leftJoin(users, eq(culturalEvents.userId, users.id))
+      .where(and(eq(culturalEvents.isFeatured, true), isNull(culturalEvents.deletedAt)));
+    return event ?? null;
+  }),
+
+  featureEvent: adminProcedure
+    .input(z.object({ id: z.number(), featured: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      // Remove featured from all first
+      await ctx.db.update(culturalEvents).set({ isFeatured: false });
+      // Then set the new one if featuring
+      if (input.featured) {
+        await ctx.db.update(culturalEvents).set({ isFeatured: true }).where(eq(culturalEvents.id, input.id));
+      }
+      return { success: true };
+    }),
 
   createEvent: protectedProcedure
     .input(z.object({ title: z.string().min(1), description: z.string().optional(), location: z.string().optional(), eventDate: z.string(), groupId: z.number().optional() }))
