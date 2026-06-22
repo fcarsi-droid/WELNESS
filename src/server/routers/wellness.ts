@@ -28,11 +28,14 @@ export const wellnessRouter = router({
         ...input,
       }).returning();
       return created;
-    }),
+  }),
 
   delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    const [resource] = await ctx.db.select().from(wellnessResources)
+      .where(and(eq(wellnessResources.id, input.id), eq(wellnessResources.userId, ctx.user.id)));
+    if (!resource) throw new Error("Recurso não encontrado");
     await ctx.db.delete(resourceLikes).where(eq(resourceLikes.resourceId, input.id));
-    await ctx.db.delete(wellnessResources).where(and(eq(wellnessResources.id, input.id), eq(wellnessResources.userId, ctx.user.id)));
+    await ctx.db.delete(wellnessResources).where(eq(wellnessResources.id, input.id));
     return { success: true };
   }),
 

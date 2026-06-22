@@ -1,7 +1,8 @@
 import { router, adminProcedure } from "../trpc";
-import { users, posts, postComments, postLikes, wellnessResources, resourceLikes, culturalPosts, culturalPostComments, culturalPostLikes, bookReviews, books, bookLoans, notifications, sessions, accounts, moodEntries, sleepEntries, hydrationEntries, calorieEntries, calorieGoals, recipes, recipeComments, recipeRatings, recipeLikes, culturalGroupMembers, readingProgress, bookClubVoteChoices, bookClubVotes, eventParticipants } from "../db/schema";
+import { users, posts, postComments, postLikes, wellnessResources, resourceLikes, culturalPosts, culturalPostComments, culturalPostLikes, bookReviews, books, bookLoans, notifications, sessions, accounts, moodEntries, sleepEntries, hydrationEntries, calorieEntries, calorieGoals, recipes, recipeComments, recipeRatings, recipeLikes, culturalGroupMembers, readingProgress, bookClubVoteChoices, bookClubVotes, eventParticipants, ergonomicCheckins, painReports } from "../db/schema";
 import { eq, ne, desc } from "drizzle-orm";
 import { z } from "zod";
+import { getLookupToken } from "../lib/encryption";
 
 export const adminRouter = router({
   // Users
@@ -50,6 +51,7 @@ export const adminRouter = router({
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const uid = input.userId;
+      const healthToken = await getLookupToken(uid);
       // Delete all content in cascade order
       await ctx.db.delete(bookClubVoteChoices).where(eq(bookClubVoteChoices.userId, uid));
       await ctx.db.delete(bookClubVotes).where(eq(bookClubVotes.userId, uid));
@@ -71,11 +73,13 @@ export const adminRouter = router({
       await ctx.db.delete(postLikes).where(eq(postLikes.userId, uid));
       await ctx.db.delete(postComments).where(eq(postComments.userId, uid));
       await ctx.db.delete(posts).where(eq(posts.userId, uid));
-      await ctx.db.delete(calorieGoals).where(eq(calorieGoals.userId, uid));
-      await ctx.db.delete(calorieEntries).where(eq(calorieEntries.userId, uid));
-      await ctx.db.delete(hydrationEntries).where(eq(hydrationEntries.userId, uid));
-      await ctx.db.delete(sleepEntries).where(eq(sleepEntries.userId, uid));
-      await ctx.db.delete(moodEntries).where(eq(moodEntries.userId, uid));
+      await ctx.db.delete(calorieGoals).where(eq(calorieGoals.lookupToken, healthToken));
+      await ctx.db.delete(calorieEntries).where(eq(calorieEntries.lookupToken, healthToken));
+      await ctx.db.delete(hydrationEntries).where(eq(hydrationEntries.lookupToken, healthToken));
+      await ctx.db.delete(sleepEntries).where(eq(sleepEntries.lookupToken, healthToken));
+      await ctx.db.delete(moodEntries).where(eq(moodEntries.lookupToken, healthToken));
+      await ctx.db.delete(ergonomicCheckins).where(eq(ergonomicCheckins.lookupToken, healthToken));
+      await ctx.db.delete(painReports).where(eq(painReports.lookupToken, healthToken));
       await ctx.db.delete(notifications).where(eq(notifications.userId, uid));
       await ctx.db.delete(sessions).where(eq(sessions.userId, uid));
       await ctx.db.delete(accounts).where(eq(accounts.userId, uid));

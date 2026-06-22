@@ -21,8 +21,10 @@ export const bookclubRouter = router({
     }),
 
   deleteMyBook: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    const [book] = await ctx.db.select().from(books).where(and(eq(books.id, input.id), eq(books.ownerId, ctx.user.id)));
+    if (!book) throw new Error("Livro não encontrado");
     await ctx.db.delete(bookLoans).where(eq(bookLoans.bookId, input.id));
-    await ctx.db.delete(books).where(and(eq(books.id, input.id), eq(books.ownerId, ctx.user.id)));
+    await ctx.db.delete(books).where(eq(books.id, input.id));
     return { success: true };
   }),
 
@@ -72,16 +74,21 @@ export const bookclubRouter = router({
   approveLoan: protectedProcedure
     .input(z.object({ loanId: z.number(), daysToReturn: z.number().default(14) }))
     .mutation(async ({ ctx, input }) => {
+      const [loan] = await ctx.db.select().from(bookLoans).where(eq(bookLoans.id, input.loanId));
+      if (!loan || loan.status !== "requested") throw new Error("Solicitação não encontrada");
+      const [book] = await ctx.db.select().from(books).where(and(eq(books.id, loan.bookId), eq(books.ownerId, ctx.user.id)));
+      if (!book) throw new Error("Sem permissão");
       const dueDate = new Date(Date.now() + input.daysToReturn * 24 * 60 * 60 * 1000);
       await ctx.db.update(bookLoans).set({ status: "active", startDate: new Date(), dueDate }).where(eq(bookLoans.id, input.loanId));
-      const [loan] = await ctx.db.select().from(bookLoans).where(eq(bookLoans.id, input.loanId));
       await ctx.db.update(books).set({ status: "borrowed" }).where(eq(books.id, loan.bookId));
       return { success: true };
     }),
 
   rejectLoan: protectedProcedure.input(z.object({ loanId: z.number() })).mutation(async ({ ctx, input }) => {
     const [loan] = await ctx.db.select().from(bookLoans).where(eq(bookLoans.id, input.loanId));
-    if (!loan) throw new Error("Empréstimo não encontrado");
+    if (!loan || loan.status !== "requested") throw new Error("Solicitação não encontrada");
+    const [book] = await ctx.db.select().from(books).where(and(eq(books.id, loan.bookId), eq(books.ownerId, ctx.user.id)));
+    if (!book) throw new Error("Sem permissão");
     await ctx.db.update(bookLoans).set({ status: "cancelled" }).where(eq(bookLoans.id, input.loanId));
     await ctx.db.update(books).set({ status: "available" }).where(eq(books.id, loan.bookId));
     return { success: true };
@@ -90,6 +97,9 @@ export const bookclubRouter = router({
   confirmReturn: protectedProcedure.input(z.object({ loanId: z.number() })).mutation(async ({ ctx, input }) => {
     const [loan] = await ctx.db.select().from(bookLoans).where(eq(bookLoans.id, input.loanId));
     if (!loan) throw new Error("Empréstimo não encontrado");
+    const [book] = await ctx.db.select().from(books).where(eq(books.id, loan.bookId));
+    if (!book) throw new Error("Livro não encontrado");
+    if (book.ownerId !== ctx.user.id && loan.requesterId !== ctx.user.id) throw new Error("Sem permissão");
     await ctx.db.update(bookLoans).set({ status: "returned", returnedAt: new Date() }).where(eq(bookLoans.id, input.loanId));
     await ctx.db.update(books).set({ status: "available" }).where(eq(books.id, loan.bookId));
     return { success: true };
